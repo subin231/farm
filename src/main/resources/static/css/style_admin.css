@@ -1,0 +1,385 @@
+* {
+    padding: 0;
+    margin: 0;
+    font: normal 12px "noto sans korean";
+}
+
+ul, ol {
+    list-style: none;
+}
+
+a, a:visited {
+    text-decoration: none;
+    color: inherit;
+}
+
+header, footer {
+    background-image: url(../images/admin/admin_bg.jpg);
+    position: fixed;
+    width: auto;
+    left: 0;
+    right: 0;
+}
+
+header {
+    top: 0;
+}
+
+header>div {
+    width: 980px;
+    height: 60px;
+    margin: 0 auto;
+    padding: 14px;
+    box-sizing: border-box;
+}
+
+header .logo {
+    display: inline-block;
+    width: 170px;
+    height: 32px;
+    background-image: url(../images/admin/admin_logo.jpg);
+}
+
+header p {
+    width: auto;
+    float: right;
+}
+
+header p, p>a {
+    text-decoration: none;
+    color: #fff;
+    font-size: 12px;
+    line-height: 24%;
+}
+
+main {
+    width: 980px;
+    height: auto;
+    margin: 60px auto;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+aside {
+    width: 175px;
+    height: 100%;
+    float: left;
+    box-sizing: border-box;
+    background-color: #fff;
+}
+
+.adNav>h3 {
+    width: auto;
+    height: 30px;
+    margin: 10px;
+    background-color: #e5e5e5;
+    border: 1px solid #ccc;
+    border-radius: 90px;
+    box-sizing: border-box;
+    padding: 7px 21px;
+    font-size: 14px;
+    line-height: 17px;
+}
+
+ul.adNav {
+    margin: 10px;
+    padding: 16px;
+    font-weight: 700;
+}
+
+li {
+    margin: 4px;
+}
+
+aside * {
+    font-weight: 700;
+}
+
+li.adNav {
+    margin-bottom: 15px;
+}
+
+li.subNav {
+    margin: 10px;
+    font-weight: 700;
+}
+
+li.subNav>a[href]:hover {
+    background-color: #ddd;
+}
+
+.now {
+    text-decoration: underline;
+}
+
+section {
+    float: left;
+    width: 805px;
+    padding-bottom: 40px;
+    box-sizing: border-box;
+    padding-left: 10px;
+}
+
+section>h3 {
+    clear: both;
+    font-size: 17px;
+    margin: 12px 0;
+    font-weight: 700;
+}
+
+article {
+    overflow: hidden;
+}
+
+article h3 {
+    margin: 10px 0;
+    height: 14px;
+    color: #111;
+}
+
+article>p>a {
+    color: #111;
+}
+
+h3>a {
+    margin-top: 1px;
+}
+
+a.more::before {
+    content: "+ ";
+}
+
+a.more {
+    float: right;
+}
+
+table {
+    width: 795px;
+    border-collapse: collapse;
+    margin-bottom: 10px;
+    border-top: #333 solid 2px;
+}
+
+thead>tr>th {
+    background-color: #fbfbfb;
+}
+
+td {
+    border-bottom: dotted 1px #999;
+    height: 42px;
+    font-size: 12px;
+    text-align: center;
+}
+
+th {
+    height: 36px;
+    text-align: center;
+}
+
+footer {
+    height: 41px;
+    bottom: 0;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+}
+
+.copy {
+    position: absolute;
+    right: 12px;
+}
+
+@media ( max-width : 980px) {
+    header>div {
+        width: 100%;
+    }
+}
+
+section>article:nth-child(2)>table {
+    margin-bottom: 0;
+}
+
+
+section>article:nth-child(2)>table img {
+    width: 60px;
+    height: 60px;
+}
+.paging {
+    overflow: hidden;
+    height: auto;
+}
+.paging > p {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+.paging > p > a[href]{
+    margin: 5px;
+}
+.paging > p > a.current{
+    font-weight: bolder;
+    text-decoration: underline;
+}
+.userList tbody>tr,
+.userList table td{
+    height: 43px;
+    box-sizing: border-box;
+}
+.userList section>article:nth-child(3)>h3 {
+    overflow: hidden;
+    height: 50px;
+    margin: 0;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.userList section>article:nth-child(3)>h3>a[href]:nth-child(1) {
+    display: block;
+    width: 50px;
+    float: left;
+    height: 14px;
+}
+
+.userList section>article:nth-child(3)>p {
+    text-align: center;
+    padding: 10px 0;
+    box-sizing: border-box;
+}
+
+.userList p>b {
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+.orderList section>article:nth-child(3)>h3 {
+    overflow: hidden;
+    height: 50px;
+    margin: 0;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.orderList section>article:nth-child(3)>h3>a[href]:nth-child(1) {
+    display: block;
+    width: 50px;
+    float: left;
+    height: 14px;
+}
+
+.orderList section>article:nth-child(3)>p {
+    text-align: center;
+    padding: 10px 0;
+    box-sizing: border-box;
+}
+
+.orderList p>b {
+    text-decoration: underline;
+}
+
+.prodList section>article:nth-child(3)>h3 {
+    overflow: hidden;
+    height: 50px;
+    margin: 0;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.prodList tbody>tr {
+    height: 90px;
+}
+.prodList section>article:nth-child(3)>h3>a[href]:nth-child(1) {
+    display: block;
+    width: 50px;
+    float: left;
+    height: 14px;
+}
+
+.prodList section>article:nth-child(3)>h3>a[href]:nth-child(2) {
+    display: flex;
+    float: right;
+    width: 74px;
+    height: 30px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.prodList section>article:nth-child(3)>p {
+    text-align: center;
+    padding: 10px 0;
+    box-sizing: border-box;
+}
+
+.prodList p>b {
+    font-weight: bold;
+}
+
+.prodReg form>h3 {
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+    height: 50px;
+    margin: 0;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.prodReg form>h3>a[href]:nth-child(1) {
+    display: flex;
+    width: 50px;
+    height: 30px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.prodReg form>h3>input {
+    width: 74px;
+    height: 30px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+}
+
+.prodReg section>article:nth-child(3)>p {
+    text-align: center;
+    padding: 10px 0;
+    box-sizing: border-box;
+}
+
+.prodReg p>b {
+    font-weight: bold;
+}
+
+.prodReg td, .prodReg th {
+    text-align: left;
+}
+
+.prodReg tr:nth-of-type(8)>td:nth-child(2) {
+    height: 166px;
+}
+
+.prodReg tr:nth-of-type(8)>td:nth-child(2)>input {
+    padding-bottom: 4px;
+}
+
+.prodReg tr:nth-of-type(8)>td:nth-child(2)>* {
+    margin-bottom: 4px;
+    box-sizing: border-box;
+}
+
+.prodReg td {
+    padding-left: 12px;
+}
+
+.prodReg textarea {
+    width: 157px;
+    height: 32px;
+    resize: none;
+    margin-top: 12px;
+    margin-bottom: 16px;
+}

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrator</title>
+    <link rel="stylesheet" th:href="@{/css/style_admin.css}">
+    <script>
+        window.onload = function() {
+            const now = document.querySelector('a#prodlist[href]');
+            if (now) {
+                now.classList.add("now");
+            }
+
+            document.addEventListener('click', function(e) {
+                const selectall = document.querySelector('.selectall');
+                const checkboxes = document.querySelectorAll('.select');
+
+                // 전체 선택 체크박스 클릭 시
+                if (e.target.classList.contains('selectall')) {
+                    selectAll(e.target);
+                }
+
+                // 개별 체크박스 클릭 시
+                if (e.target.classList.contains('select')) {
+                    updateSelectAllCheckbox();
+                }
+
+                function selectAll(selectAllCheckbox) {
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = selectAllCheckbox.checked;
+                    });
+                }
+
+                function updateSelectAllCheckbox() {
+                    const allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
+                    selectall.checked = allChecked;
+                }
+
+                // 삭제 버튼 클릭 시
+                if (e.target.classList.contains('del')) {
+                    e.preventDefault();
+
+                    const selectedCheckboxes = document.querySelectorAll('.select:checked');
+                    let selectedIds = [];
+
+                    for (let checkbox of selectedCheckboxes) {
+                        const productNo = checkbox.value.trim();
+                        console.log(productNo);
+                        selectedIds.push(productNo);
+                    }
+
+                    if (selectedIds.length === 0) {
+                        alert('삭제하려는 상품을 선택하세요.');
+                        return;
+                    }
+
+                    if (!confirm('선택한 상품을 정말 삭제하시겠습니까?')) {
+                        return;
+                    }
+
+
+                    fetch('/admin/ProductList/Delete', {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(selectedIds)
+                    })
+                        .then(resp => resp.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert('삭제되었습니다.');
+                                location.reload();
+                            } else {
+                                alert('삭제에 실패했습니다.');
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Error:', err);
+                            alert('삭제 중 오류가 발생했습니다.');
+                        });
+                }
+            });
+        };
+
+    </script>
+</head>
+<body>
+<div id="wrap">
+    <th:block th:include="/admin/Admin_header"/>
+    <main>
+        <th:block th:include="/admin/Admin_aside"/>
+        <section class="prodList">
+            <section>
+                <h3>상품목록</h3>
+                <article>
+                    <table>
+                        <thead>
+                        <tr>
+                            <th><input type="checkbox" class="selectall"></th>
+                            <th>사진</th>
+                            <th>상품번호</th>
+                            <th>상품명</th>
+                            <th>구분</th>
+                            <th>가격</th>
+                            <th>재고</th>
+                            <th>등록일</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:if="${#lists.isEmpty(productDTOs)}">
+                            <td colspan="9" style="width: 100%;">등록된 상품이 없습니다.</td>
+                        </tr>
+                        <tr th:each="product : ${productDTOs.getDtoList()}">
+                            <td><input type="checkbox" class="select" th:value="${product.prodNo}"></td>
+                            <td>
+                                <img th:src="@{'/uploads/'+${product.prodImage1}}" th:alt="${product.prodName}" width="60" height="60" />
+                            </td>
+
+                            <td>[[${product.prodNo}]]</td>
+                            <td>[[${product.prodName}]]</td>
+                            <td>[[${product.prodCateType}]]</td>
+                            <td>[[${product.prodPrice}]]원</td>
+                            <td>[[${product.prodStock}]]</td>
+                            <td>[[${product.Date}]]</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </article>
+                <article>
+                    <h3>
+                        <a href="#" class="del">선택삭제</a> <a th:href="@{/admin/ProductRegister}" class="btn">상품등록</a>
+                    </h3>
+                </article>
+                <article class="paging">
+                    <p>
+                        <a th:href="@{/admin/ProductList(pg=${productDTOs.start - 1})}" th:if="${productDTOs.prev}" class="no current">&#60;</a>
+                        <th:block th:each="num:${#numbers.sequence(productDTOs.start, productDTOs.end)}">
+                            <a th:href="@{/admin/ProductList(pg=${num})}"
+                               th:classappend="${num == productDTOs.pg} ? 'no current bold' : 'no'">[[${num}]]</a>
+                        </th:block>
+                        <a th:href="@{/admin/ProductList(pg=${productDTOs.end + 1})}" th:if="${productDTOs.next}" class="no current">&#62;</a>
+                    </p>
+                </article>
+            </section>
+        </section>
+    </main>
+</div>
+<th:block th:include="/admin/Admin_footer"/>
+</body>
+
+</html>

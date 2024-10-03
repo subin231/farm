@@ -1,0 +1,202 @@
+<title xmlns:sec="http://www.w3.org/1999/xhtml">상품상세보기</title>
+<link rel="stylesheet" th:href="@{/css/style_market_view.css}">
+<th:block th:include ="grid/_header.html"/>
+<script th:src="@{/js/utils.js}"></script>
+
+<script>
+        window.onload = function () {
+        const numberInput = document.getElementById('numberInput');
+        const totalPrice = document.getElementById('totalPrice');
+        const cart = document.getElementsByClassName('add_to_cart')[0];
+        const order = document.getElementsByClassName('buy_now')[0];
+        const userId = document.getElementById('userId').value;
+
+        numberInput.addEventListener('input', () => {
+
+                const inNum = numberInput.value;
+
+                totalPrice.innerText = inNum * [[${product.prodPrice - (product.prodPrice * product.prodDiscount / 100)
+                }]] + "원"
+                ;
+            });
+
+        cart.addEventListener('click', ()=>{
+
+            let formData = new FormData();
+
+            const count = document.getElementById('numberInput').value;
+
+            const productNo = document.getElementById('prodNo').value;
+            if (!userId) {
+                alert("로그인 후 장바구니에 추가할 수 있습니다.");
+                return; // 요청을 보내지 않음
+            }
+            formData.append("cartProdCount", count);
+            formData.append("prodNo", productNo);
+            formData.append("userId", userId);
+
+            if(confirm("장바구니에 담으시겠습니까?")){
+
+                fetch('/market/MarketCart',{
+                    method:'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '${_csrf.token}'  // Spring Security 사용 시 필요
+                    },
+                    body: formData
+                })
+                    .then(resp => resp.json())
+                    .then(data => {
+                        console.log(data)
+                        if(data.success) {
+                            if(confirm("장바구니로 이동하시겠습니까?")) {
+                                alert("장바구니로 이동합니다.")
+                                window.location.href = "/market/MarketCart?userId=" + userId;
+                            }
+                        }
+                    })
+                    .catch(err =>{
+                        console.log(err)
+                    });
+
+            }
+
+        })
+
+
+            order.addEventListener('click', ()=>{
+
+                const count = document.getElementById('numberInput').value;
+                const productNo = document.getElementById('prodNo').value;
+                if (!userId) {
+                    alert("로그인 후 구매할 수 있습니다.");
+                    return; // 요청을 보내지 않음
+                }
+                if(confirm("구매페이지로 이동하시겠습니까?")){
+                    alert("구매페이지로 이동합니다.")
+                    location.href="/market/MarketOrder?prodNo="+productNo+"&&cartProdCount="+count+"&&userId="+userId;
+                }else{
+                    alert("상품리스트로 돌아갑니다.")
+                    location.href="/market/MarketList";
+                }
+
+            })
+
+
+
+        }
+</script>
+<!-- #main -->
+<main id="main" class="cf">
+    <section class="mainIn cf">
+        <div class="sub_bg">
+            <img th:src="@{/images/sub_top_tit2.png}" alt="MARKET" class="sub_tit">
+        </div><!-- .sub_bg -->
+        <aside class="aside">
+            <div class="sidebar">
+                <div class="aside_cate">
+                    <img th:src="@{/images/sub_aside_cate2_tit.png}" alt="Buying in the Market 장보기">
+                </div><!-- .aside_cate -->
+                <div class="aside_bg">
+                    <ul class="cate_lnb_real">
+                        <li><a th:href="@{/market/MarketList}">장보기</a></li>
+                    </ul><!-- .cate_lnb -->
+                </div><!-- .aside_bg -->
+            </div><!-- .sidebar -->
+        </aside><!-- .aside -->
+        <article class="article">
+            <div class="articleIn">
+                <nav>
+                    <h2>
+                        <img th:src="@{/images/sub_nav_tit_cate2_tit1.png}" alt="장보기">
+                    </h2>
+                    <p class="location">
+                        <img th:src="@{/images/sub_page_nav_ico.gif}" alt="메뉴">
+                        <span>HOME </span>
+                        <span>장보기 </span>
+                        <strong>장보기</strong>
+                    </p>
+                </nav>
+                <h3>기본정보</h3>
+                <div class="product_info">
+                    <img th:src="@{'/uploads/'+${product.prodImage2}}" alt="제품 이미지 2">
+                    <div class="product_details">
+                        <table>
+                            <tr>
+                                <th>상품명</th>
+                                <td class="product">[[${product.prodName}]]</td>
+                            </tr>
+                            <tr>
+                                <th>상품코드</th>
+                                <td class="product">[[${product.prodNo}]]</td>
+                            </tr>
+                            <tr>
+                                <th>배송비</th>
+                                <td class="deliver">
+                                    [[${product.prodDelivery}]]원 <span style="">&nbsp3만원 이상 무료배송</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>판매가격</th>
+                                <td class="sell_price">
+                                    [[${product.prodPrice - (product.prodPrice * product.prodDiscount / 100)}]]원
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>구매수량</th>
+                                <td class="count">
+                                    <input type="number" value="1" id="numberInput"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>합계</th>
+                                <td class="sum" id="totalPrice">
+                                    [[${product.prodPrice - (product.prodPrice * product.prodDiscount / 100)}]]원
+                                </td>
+                            </tr>
+                        </table>
+                        <div class="buttons">
+                            <a href="#" type="button" class="add_to_cart">장바구니</a>
+                            <a href="#"  type="button" class="buy_now">바로구매</a>
+                        </div> <!-- .buttons -->
+                    </div> <!-- .product_info -->
+                </div>
+
+
+                <input type="hidden" name="prodNo" id="prodNo" th:value="${product.prodNo}">
+                <input type="hidden" name="uid" id="userId" th:value="${userId}">
+                <input type="hidden" name="qty" value="" id="qty">
+
+                <h3>상품설명</h3>+
+                <div class="sample"><img th:src="@{'/uploads/'+${product.prodImage3}}" alt="제품 이미지 3"></div>
+                <h3>배송정보</h3>
+                <p class="sms">입금하신 이후 택배송장번호는 SMS(문자서비스)를 통해 고객님께 안내해드립니다.</p>
+                <h3>교환/반품</h3>
+                <table class="table_change">
+                    <colgroup>
+                        <col style="width: 28.56%;">
+                        <col style="width: 71.44%;">
+                    </colgroup>
+                    <tbody>
+                    <tr>
+                        <th><label>교환 반품이 가능한 경우</label></th>
+                        <td>
+                            팜스토리 상품에 하자가 있거나 불량인 경우<br>
+                            채소, 과일, 양곡등의 식품은 만1일 이내<br>
+                            기타 상품은 수령일로부터 영업일 기준 일주일 이내<br>
+                            받으신 상품이 표시사항과 다른 경우에는 받으신 날로부터 일주일 이내
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label>교환 반품이 불가능한 경우</label></th>
+                        <td>
+                            신선 식품의 경우 단순히 마음에 들지 않는 경우<br>
+                            단순 변심으로 상품이 가치가 훼손돼서 판매가 어려운 경우
+                        </td>
+                    </tr>
+                </table>
+            </div><!-- .articleIn -->
+        </article><!-- .article -->
+    </section>
+</main><!-- #main -->
+<th:block th:include ="grid/_footer.html"/>
+

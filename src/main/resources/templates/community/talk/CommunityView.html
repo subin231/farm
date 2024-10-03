@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>글보기</title>
+	<link rel="stylesheet" th:href="@{/css/community.css}">
+	<script th:src="@{/js/utils.js}"></script>
+	<script>
+		window.onload = function() {
+			// name 속성으로 hidden input에서 artCate 값 가져오기
+			const artCate = document.querySelector('input[name="artCate"]').value;
+
+			// 카테고리 기반으로 특정 요소 선택
+			let now;
+			if (artCate === 'CommunityNotice') {
+				now = document.querySelector('.cate_lnb li:nth-child(1) a');
+			} else if (artCate === 'CommunityDiet') {
+				now = document.querySelector('.cate_lnb li:nth-child(2) a');
+			} else if (artCate === 'CommunityChef') {
+				now = document.querySelector('.cate_lnb li:nth-child(3) a');
+			} else if (artCate === 'CommunityCs') {
+				now = document.querySelector('.cate_lnb li:nth-child(4) a');
+			} else if (artCate === 'CommunityFaq') {
+				now = document.querySelector('.cate_lnb li:nth-child(5) a');
+			}
+
+			// 해당 요소에 "now" 클래스 추가
+			if (now) {
+				now.classList.add("now");
+			}
+		};
+	</script>
+	<script>
+		window.onload = function () {
+			const btnComplete = document.getElementById('btnComplete');
+			const commentForm = document.commentForm;
+			const commentList = document.getElementsByClassName('commentList')[0];
+
+			btnComplete.onclick = async function (e) {
+				e.preventDefault();
+				const jsonData = {
+					"userUid": commentForm.writer.value,
+					"artNo": commentForm.artNo.value,
+					"content": commentForm.content.value
+				};
+
+				const data = await fetchPost('/comment/write', jsonData);
+				if (data != null) {
+					window.location.reload(true);
+					alert('댓글이 등록되었습니다.');
+					const commentArticle = `
+                  <article>
+                     <span class="nick">${data.user.userUid}</span>
+                     <span class="date">${data.commentRegDate}</span>
+                     <p class="content">${data.content}</p>
+                     <div>
+                        <a href="#" class="commentRemove" data-no="${data.commentNo}">삭제</a>
+                        <a href="#" class="commentModify" data-no="${data.commentNo}">수정</a>
+                     </div>
+                  </article>`;
+					commentList.insertAdjacentHTML('beforeend', commentArticle);
+				}
+			}
+		};
+
+		let originalText = '';
+
+		function getArticleAndCommentNo(e) {
+			const article = e.target.closest('article');
+			const articleNo = document.getElementById('articleNo').value;
+			const commentNo = e.target.dataset.no;
+			return { articleNo, commentNo, article };
+		}
+
+		document.addEventListener('click', function(e) {
+			if (e.target.classList.contains('commentRemove')) {
+				e.preventDefault();
+				const { articleNo, commentNo, article } = getArticleAndCommentNo(e);
+				fetch(`/comment/delete?articleNo=${articleNo}&commentNo=${commentNo}`, { method: 'GET', cache: 'no-cache' })
+						.then(resp => resp.json())
+						.then(data => {
+							if (data.result > 0) {
+								article.remove();
+								alert('댓글이 삭제되었습니다.');
+							} else {
+								alert('댓글 삭제에 실패했습니다.');
+							}
+						})
+						.catch(err => {
+							console.error('삭제 요청 중 오류 발생:', err);
+						});
+				window.location.reload(true);
+			}
+
+			if (e.target.classList.contains('commentModify')) {
+				e.preventDefault();
+				const { articleNo, commentNo, article } = getArticleAndCommentNo(e);
+				const textarea = article.querySelector('textarea');
+				const mode = e.target.innerText;
+
+				if (mode === '수정') {
+					originalText = textarea.value;
+					textarea.readOnly = false;
+					textarea.style.background = 'white';
+					textarea.style.border = '1px solid #555';
+					e.target.innerText = '수정완료';
+					article.querySelector('.commentCancel').style.display = 'inline';
+				} else {
+					const content = textarea.value;
+					fetch(`/comment/modify`, {
+						method: 'PUT',
+						body: JSON.stringify({ articleNo, commentNo, content }),
+						headers: { 'Content-Type': 'application/json' },
+						cache: 'no-cache'
+					})
+							.then(resp => resp.json())
+							.then(data => {
+								if (data.result > 0) {
+									alert('댓글이 수정되었습니다.');
+									textarea.readOnly = true;
+									textarea.style.background = 'transparent';
+									textarea.style.border = 'none';
+									e.target.innerText = '수정';
+									article.querySelector('.commentCancel').style.display = 'none';
+
+								} else {
+									alert('댓글 수정에 실패했습니다.');
+								}
+							})
+							.catch(err => {
+								console.error('수정 요청 중 오류 발생:', err);
+							});
+					window.location.reload(true);
+				}
+			}
+
+			if (e.target.classList.contains('commentCancel')) {
+				e.preventDefault();
+				const { article } = getArticleAndCommentNo(e);
+				const textarea = article.querySelector('textarea');
+				textarea.value = originalText;
+				textarea.readOnly = true;
+				textarea.style.background = 'transparent';
+				textarea.style.border = 'none';
+				e.target.style.display = 'none';
+				article.querySelector('.commentModify').innerText = '수정';
+			}
+		});
+	</script>
+
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			const deleteButton = document.querySelector('.btnDelete');
+
+			deleteButton.addEventListener('click', function (e) {
+				e.preventDefault();
+
+				if (confirm('정말 삭제하시겠습니까?')) {
+					const deleteUrl = deleteButton.getAttribute('href');
+					const cateValue = document.getElementById("cateValue").value; // cate 값을 가져옴
+
+					fetch(deleteUrl, {
+						method: 'DELETE',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+					})
+							.then(response => {
+								alert("게시글 삭제에 성공하였습니다.")
+								window.location.href = `/community/${cateValue}`;  // cate 값을 사용하여 리다이렉션
+							})
+							.catch(error => {
+								console.error('삭제 요청 중 오류 발생:', error);
+								alert('오류가 발생했습니다.');
+							});
+				}
+			});
+		});
+	</script>
+</head>
+<body>
+	<div id="container">
+		<th:block th:include ="/grid/_header.html"/>
+		<th:block th:include ="/grid/_aside_cm.html"/>
+
+
+
+		<section class="view">
+
+			<h3>글보기</h3>
+			<table>
+
+				<tr>
+					<td>제목</td>
+					<p th:value="${#authentication.principal.user.userUid}"></p>
+					<td><input type="text" name="artTitle" id="artTitle" th:value="${articleDTO.artTitle}" readonly/></td>
+				</tr>
+				<tr th:if="${articleDTO.fileList.size() > 0}">
+					<th>파일</th>
+					<td>
+						<th:block th:each="file:${articleDTO.fileList}">
+							<a th:href="@{/file/download/{fno}(fno=${file.fileNo})}">[[${file.fileoName}]]</a>&nbsp;<span>[[${file.fileDownload}]]</span>회 다운로드<br>
+						</th:block>
+					</td>
+				</tr>
+				<tr>
+					<td>내용</td>
+					<td><textarea name="content" readonly>[[${articleDTO.artContent}]]</textarea></td>
+				</tr>
+			</table>
+
+			<div>
+				<input type="hidden" id="cateValue" th:value="${cate}" />
+				<a th:href="@{|community/${cate}/CommunityDelete/${articleDTO.artNo}|}" class="btnDelete">삭제</a>
+				<a th:href="|/community/${cate}/CommunityModify/${articleDTO.artNo}|" class="btnModify">수정</a>
+				<a th:href="@{|/community/${cate}|}" class="btnList">목록</a>
+			</div>
+			<!-- 댓글리스트 -->
+			<section class="commentList">
+				<h3>댓글목록</h3>
+				<article th:each="comment : ${comments}" class="comment">
+					<input type="hidden" name="artNo" id="articleNo" th:value="${articleDTO.artNo}"/>
+					<input type="hidden" name="commentNo" id="commentNo" th:value="${comment.commentNo}"/>
+					<span th:text="${comment.user.userNick}"></span>
+					<span th:text="${comment.commentRegDate}"></span>
+					<textarea style="resize: none" name="comment" readonly th:text="${comment.content}"></textarea>
+					<th:block th:if="${#authentication.principal.user.userUid eq comment.user.userUid}">
+						<div>
+							<a href="#" class="commentRemove" th:attr="data-no=${comment.commentNo}">삭제</a>
+							<a href="#" class="commentCancel" th:attr="data-no=${comment.commentNo}" style="display:none;">취소</a>
+							<a href="#" class="commentModify" th:attr="data-no=${comment.commentNo}">수정</a>
+						</div>
+					</th:block>
+					<div>
+						<a href="#" class="commentCancel" th:attr="data-no=${comment.commentNo}" style="display:none;">취소</a>
+					</div>
+				</article>
+			</section>
+			<section class="commentForm">
+				<h3>댓글쓰기</h3>
+				<form th:action="@{/comment/write}" name="commentForm" method="post">
+					<input type="hidden" name="artNo" id="artNo" th:value="${articleDTO.artNo}"/>
+					<input type="hidden" name="writer" id="writer" th:value="${#authentication.principal.user.userUid}" readonly>
+					<textarea name="content">댓글내용 입력</textarea>
+					<div>
+						<a th:href="@{#}" class="btn btnCancel">취소</a>
+						<input type="submit" value="작성완료" id="btnComplete" class="btnWrite"/>
+					</div>
+				</form>
+			</section>
+		</section>
+
+        </main><!-- #main -->
+        <!-- footer -->
+	<th:block th:include ="/grid/_footer.html"/>
+		</section>
+	</div>
+</body>

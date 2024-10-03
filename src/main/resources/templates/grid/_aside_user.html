@@ -1,0 +1,60 @@
+
+<aside class="aside">
+  <div class="sidebar">
+    <div class="aside_cate">
+      <img th:src="@{/images/myinfo/myinfo_menu_tit.png}" alt="Buying in the Market 장보기">
+    </div><!-- .aside_cate -->
+    <div class="aside_bg">
+      <ul class="cate_lnb_real">
+        <li> <a href="#">장바구니</a></li>
+        <li> <a href="#">주문내역</a></li>
+        <li> <a href="#">정보수정</a></li>
+      </ul><!-- .cate_lnb -->
+    </div><!-- .aside_bg -->
+  </div><!-- .sidebar -->
+</aside><!-- .aside -->
+
+<article class="article"><!-- .article start-->
+  <div class="articleIn"><!-- .articleIn start-->
+    <nav>
+
+      <h2>
+            <img th:src="@{/images/myinfo/myinfo_menu1.png}" alt="장바구니">
+        <!--
+          </c:when>
+          <c:when test="${cate eq 'b102'}">
+     -->
+            <img th:src="@{/images/myinfo/myinfo_menu2.png}" alt="주문내역">
+            <!--
+          </c:when>
+          <c:otherwise>-->
+            <img th:src="@{/images/myinfo/myinfo_menu3.png}" alt="정보수정">
+            <!--
+          </c:otherwise>
+        </c:choose>-->
+      </h2>
+      <p class="location">
+        <img th:src="@{/images/myinfo/myinfo_menu1.png}" alt="메뉴">
+        <span>HOME </span>
+        <span>나의정보 </span>
+        <!--
+        <c:choose>
+          <c:when test="${cate eq 'b101'}">
+           -->
+            <strong>장바구니</strong>
+            <!--
+          </c:when>
+          <c:when test="${cate eq 'b102'}">
+           -->
+            <strong>주문내역</strong>
+            <!--
+          </c:when>
+          <c:otherwise>
+           -->
+            <strong>정보수정</strong>
+            <!--
+          </c:otherwise>
+        </c:choose>
+         -->
+      </p>
+    </nav>

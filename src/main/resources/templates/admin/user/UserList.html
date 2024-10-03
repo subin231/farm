@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Administrator</title>
+	<link rel="stylesheet" th:href="@{/css/style_admin.css}">
+	<script>
+		// 모달 상세보기 스크립트
+		document.addEventListener('DOMContentLoaded', function() {
+			document.querySelectorAll('.detail_btn').forEach(button => {
+				button.addEventListener('click', function(event) {
+					event.preventDefault(); // 기본 동작 방지
+
+					// 버튼의 data-order-no 속성에서 주문 번호를 가져옴
+					const userUid = this.getAttribute('data-user-uid');
+					// AJAX 요청 보내기
+					fetch(`/admin/UserList/${userUid}`)
+							.then(response => {
+								if (!response.ok) {
+									throw new Error('네트워크 오류: ' + response.status);
+								}
+								return response.json();
+							})
+							.then(userData => {
+								// 모달에 데이터를 채우기
+								document.querySelector('.modal_userZip').textContent = userData.userZip;
+								document.querySelector('.modal_userAddr1').textContent = userData.userAddr1;
+								document.querySelector('.modal_userAddr2').textContent = userData.userAddr2;
+								document.querySelector('.modal_userRegDate').textContent = userData.userRegDate;
+								document.querySelector('.modal_userLeaveDate').textContent = userData.userLeaveDate;
+								document.querySelector('.modal_userTotalPoint').textContent = userData.userTotalPoint;
+								document.querySelector('.modal').style.display = 'block';
+							})
+							.catch(err => {
+								console.error('Error fetching order details:', err);
+								alert('주문 정보를 가져오는 데 오류가 발생했습니다.');
+							});
+				});
+			});
+
+			// 모달 닫기 버튼 처리
+			document.querySelector('.close_btn').addEventListener('click', function() {
+				document.querySelector('.modal').style.display = 'none';
+			});
+		});
+	</script>
+</head>
+<body>
+<div id="wrap">
+
+	<th:block th:include="/admin/Admin_header"/>
+	<link rel="stylesheet" th:href="@{/css/user/findidresult.css}">
+
+	<div class="modal">
+		<section class="modal_popup">
+			<div class="top_txt">
+			</div>
+			<div>
+				<table class="modal_table">
+					<tr>
+						<td>우편번호</td>
+						<td>
+							<p><span class="modal_userZip"></span></p>
+						</td>
+					</tr>
+					<tr>
+						<td>주소</td>
+						<td>
+							<p><span class="modal_userAddr1"></span></p>
+						</td>
+					</tr>
+					<tr>
+						<td>상세주소</td>
+						<td>
+							<p><span class="modal_userAddr2"></span></p>
+						</td>
+					</tr>
+					<tr>
+						<td>가입일</td>
+						<td>
+							<p><span class="modal_userRegDate"></span></p>
+						</td>
+					</tr>
+					<tr>
+						<td>탈퇴일</td>
+						<td>
+							<p><span class="modal_userLeaveDate"></span></p>
+						</td>
+					</tr>
+					<tr>
+						<td>총포인트</td>
+						<td>
+							<p><span class="modal_userTotalPoint"></span></p>
+						</td>
+					</tr>
+				</table>
+			</div>
+			<button type="button" class="close_btn">닫기</button>
+		</section><!-- section modal -->
+	</div>
+	<main>
+		<th:block th:include="/admin/Admin_aside"/>
+		<section class="userlist">
+			<section>
+				<h3>회원목록</h3>
+				<article>
+					<table>
+						<thead>
+						<tr>
+							<th><input type="checkbox" name="selectall" onclick="selectAll(this)"></th>
+							<th>아이디</th>
+							<th>이름</th>
+							<th>별명</th>
+							<th>이메일</th>
+							<th>휴대폰</th>
+							<th>등급</th>
+							<th>가입일</th>
+							<th>확인</th>
+						</tr>
+						</thead>
+						<tbody>
+						<tr th:if="${userDtos == null}">
+							<td colspan="10" style="width: 100%;">등록된 회원이 없습니다.</td>
+						</tr>
+						<tr var="user" th:each="user:${userDtos.dtoList}">
+							<td><input type="checkbox" name="select"></td>
+							<td th:text="${user.userUid}"></td>
+							<td th:text="${user.userName}"></td>
+							<td th:text="${user.userNick}"></td>
+							<td th:text="${user.userEmail}"></td>
+							<td th:text="${user.userHp}"></td>
+							<td>
+
+								<select class="usergrade" th:data-id="${user.userUid}">
+									<option value="ADMIN" th:selected="${user.userRole}=='ADMIN'">1</option>
+									<option value="2" th:selected="${user.userRole}==2">2</option>
+									<option value="3" th:selected="${user.userRole}==3">3</option>
+									<option value="4" th:selected="${user.userRole}==4">4</option>
+									<option value="5" th:selected="${user.userRole}==5">5</option>
+									<option value="0" th:selected="${user.userRole}==0">0</option>
+								</select>
+							</td>
+							<td>[[${user.date}]] [[${user.timeDate}]]</td>
+							<td><a href="#" class="detail_btn" th:data-user-uid="${user.userUid}">[상세확인]</a></td>
+						</tr>
+						</tbody>
+					</table>
+				</article>
+				<article class="paging">
+					<p>
+						<a th:href="@{/admin/UserList(pg=${userDtos.start - 1})}" th:if="${userDtos.prev}" class="no current">&#60;</a>
+						<th:block th:each="num:${#numbers.sequence(userDtos.start, userDtos.end)}">
+							<a th:href="@{/admin/UserList(pg=${num})}"
+							   th:classappend="${num == userDtos.pg} ? 'no current bold' : 'no'">[[${num}]]</a>
+						</th:block>
+						<a th:href="@{/admin/UserList(pg=${userDtos.end + 1})}" th:if="${userDtos.next}" class="no current">&#62;</a>
+					</p>
+				</article>
+			</section>
+		</section>
+	</main>
+</div>
+<th:block th:include="/admin/Admin_footer"/>
+</body>
+<script>
+	const now = document.querySelector('a#userlist[href]');
+	if (now) {
+		now.classList.add("now");
+	}
+
+	function checkSelectAll(checkbox)  {
+		const selectall = document.querySelector('input[name="selectall"]');
+
+		if(checkbox.checked === false)  {
+			selectall.checked = false;
+		}
+	}
+
+	function selectAll(selectAll)  {
+		const checkboxes = document.getElementsByName('select');
+
+		checkboxes.forEach((checkbox) => {
+			checkbox.checked = selectAll.checked
+		})
+	}
+
+	function updateUserGrade(id, grade) {
+		console.log(`User ID: ${id}`);  // 디버깅 로그
+		console.log(`New Grade: ${grade}`);  // 디버깅 로그
+
+		const data = {
+			userUid: id,
+			userRole: grade
+		};
+
+
+		fetch('/admin/UserList/Update', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(data)
+		})
+				.then(resp=>resp.json())
+				.then(data=>{
+					console.log(data);
+					if (data.result != 0) {
+						alert('정보가 성공적으로 수정되었습니다.');
+					} else {
+						alert('정보 수정에 실패했습니다.');
+					}
+				})
+				.catch(err => {
+					console.error(err);
+					alert('업데이트에 실패했습니다.');
+				});
+	}
+	document.addEventListener('DOMContentLoaded', function() {
+		// 모든 select 요소에 대해 이벤트 리스너 등록
+		document.querySelectorAll('.usergrade').forEach(selectElement => {
+			selectElement.addEventListener('input', async function() {
+				const id = this.dataset.id;  // data-user-id에서 값 가져오기
+				const grade = this.value;
+
+				console.log(`User ID: ${id}`);  // 디버깅 로그
+				console.log(`New Grade: ${grade}`);  // 디버깅 로그
+				// 사용자 등급 업데이트
+				if(confirm('정말 변경하시겠습니까?')){
+					updateUserGrade(id, grade);
+				}else{
+					return;
+				}
+			});
+		});
+	});
+	document.addEventListener('DOMContentLoaded', function() {
+		// 모든 '상세확인' 버튼에 클릭 이벤트 리스너 추가
+		document.querySelectorAll('.detail_btn').forEach(button => {
+			button.addEventListener('click', function(event) {
+				event.preventDefault(); // 기본 동작 방지 (# 링크 클릭 방지)
+
+				// 모달에 사용자 정보 업데이트
+				const name = this.dataset.name;
+				const uid = this.dataset.uid;
+				const email = this.dataset.email;
+				const rdate = this.dataset.rdate;
+
+				document.querySelector('.modal_name').textContent = name;
+				document.querySelector('.modal_uid').textContent = uid;
+				document.querySelector('.modal_email').textContent = email;
+				document.querySelector('.modal_rdate').textContent = rdate;
+
+				// 모달을 보이게 설정
+				document.querySelector('.modal').style.display = 'block';
+			});
+		});
+
+		// 모달 닫기 버튼
+		document.querySelector('.close_btn').addEventListener('click', function() {
+			// 모달을 숨기기
+			document.querySelector('.modal').style.display = 'none';
+		});
+	});
+</script>
+</html>

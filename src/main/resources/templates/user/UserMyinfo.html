@@ -1,0 +1,183 @@
+<th:block th:include="/user/User_myinfo_header.html"/>
+<title>MyInfo</title>
+<script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script th:src="@{/js/postcode.js}"></script>
+<script th:src="@{/js/utils.js}"></script>
+<script th:inline="javascript">
+	const uid = [[${user.userUid}]];
+	const regDate = [[${user.userRegDate}]];
+</script>
+
+<script th:src="@{/js/MyinfoValidation.js}"></script>
+<script>
+	window.onload = function() {
+		const now = document.querySelector('.aside_bg .cate_lnb_real li:nth-child(3) a');
+		if (now) {
+			now.classList.add("now");
+		}
+	};
+</script>
+<link rel="stylesheet" th:href="@{/css/user/myinfo.css}">
+<link rel="stylesheet" th:href="@{/css/common_myinfo_modify.css}">
+<main>
+	<div class="mainIn cf">
+		<section class="infotable">
+			<div class="sub_bg">
+				<img th:src="@{/images/myinfo/myinfo_top_tit.png}" alt="MY INFO" class="sub_tit">
+			</div><!-- .sub_bg -->
+
+			<aside class="aside">
+				<div class="sidebar">
+					<div class="aside_cate">
+						<img th:src="@{/images/myinfo/myinfo_menu_tit.png}" alt="Buying in the Market 장보기">
+					</div><!-- .aside_cate -->
+					<div class="aside_bg">
+						<ul class="cate_lnb_real">
+
+							<li> <a th:href="@{/userInfo/UserMyinfoCart(userId=${#authentication.principal.user.userUid})}">장바구니</a></li>
+							<li> <a th:href="@{/userInfo/UserMyinfoOrder(userId=${#authentication.principal.user.userUid})}">주문정보</a></li>
+							<li> <a th:href="@{/userInfo/UserMyinfo}">정보수정</a></li>
+
+						</ul><!-- .cate_lnb -->
+					</div><!-- .aside_bg -->
+				</div><!-- .sidebar -->
+			</aside><!-- .aside -->
+			<article class="article">
+				<p class="location">
+					<img th:src="@{/images/sub_page_nav_ico.gif}" alt="메뉴">
+					<span>HOME </span>
+					<span>나의정보 </span>
+					<strong>정보수정</strong>
+				</p><!-- .location -->
+				<div class="articleIn cf">
+					<nav>
+						<h2><img th:src="@{/images/myinfo/myinfo_nav_tit3.png}" alt="장보기"></h2>
+
+					</nav>
+
+					<div class="form">
+						<span class="span">회원정보 설정</span>
+						<table>
+							<tr>
+								<th>아이디</th>
+								<td><span>[[${user.userUid}]]</span></td>
+							</tr>
+							<tr>
+								<th>비밀번호</th>
+								<td>
+									<div class="form_group">
+										<input type="password" id="input_password" class="userPass"
+											   placeholder="비밀번호 입력">
+										<span style="margin-left: 10px" class="resultPass"></span>
+									</div>
+								</td>
+							</tr>
+							<tr>
+								<th>비밀번호 확인</th>
+								<td>
+									<div class="form_group">
+										<input type="password" id="input_password_confirm" class="pass2"
+											   placeholder="비밀번호 입력확인">
+										<button type="button" class="btn_modify"><p>비밀번호 수정</p></button>
+									</div>
+								</td>
+							</tr>
+							<tr>
+								<th>회원가입날짜</th>
+								<td><span>[[${#strings.substring(user.userRegDate,0,10)}]]</span></td>
+							</tr>
+						</table>
+						<span class="privacy_span">개인정보 수정</span>
+						<form id="myForm" action="#" method="post" enctype="multipart/form-data">
+
+							<table>
+								<tr>
+									<th>이름</th>
+									<td class="form_group">
+										<input type="text" id="input_name" name="userName"
+											   th:value="${user.userName}"><span class="resultName"></span>
+									</td>
+								</tr>
+								<tr>
+									<th>별명</th>
+									<td class="form_group">
+										<ul>
+											<li><p>공백없는 한글, 영문, 숫자 입력</p></li>
+											<li>
+												<input type="text" id="input nickname" name="userNick"
+													   th:value="${user.userNick}">
+												<button type="button" class="btn_duplicate" name="btnnick"
+														data-type="nick" placeholder="별명 입력"><img
+														th:src="@{/images/user/chk_id.gif}" alt="Duplicate Check"
+														class="icon"></button>
+												<span class="resultNick"></span>
+											</li>
+										</ul>
+									</td>
+								</tr>
+								<tr>
+									<th>이메일</th>
+									<td class="form_group">
+										<input type="email" name="userEmail" id="input email"
+											   th:value="${user.userEmail}"/>
+										<button type="button" id="btnSendEmail" name="btnEmail" data-type="email"
+												class="btn_send"><img th:src="@{/images/user/chk_auth.gif}"
+																	  alt="인증번호 받기"/></button>
+										<span class="resultEmail"></span><br>
+										<div class="auth" style="display:none">
+											<input type="text" name="auth" class="userAuth" placeholder="인증번호 입력"/>
+											<button type="button" id="btnAuthEmail" class="btn_auth"><img
+													th:src="@{/images/user/chk_confirm.gif}" alt="확인"/></button>
+											<span class="resultEmail"></span>
+										</div>
+									</td>
+								</tr>
+								<tr>
+									<th>휴대폰</th>
+									<td class="form_group">
+										<input type="tel" id="input tel" name="userHp" th:value="${user.userHp}">
+										<span class="resultHp"></span>
+									</td>
+								</tr>
+								<tr>
+									<th>주소</th>
+									<td class="form_group">
+										<div class="address">
+											<input type="text" name="userZip" id="zip" th:value="${user.userZip}"
+												   readonly/>
+											<button type="button" class="btnZip" onclick="postcode()"><img
+													th:src="@{/images/user/chk_post.gif}" class="icon" alt="우편번호 버튼">
+											</button><!--alt="Postal check"-->
+										</div>
+										<div class="address">
+											<input type="text" id="addr1" class="input_address" name="userAddr1"
+												   th:value="${user.userAddr1}" readonly/>
+										</div>
+										<div class="address">
+											<input type="text" id="addr2" class="input_address" name="userAddr2"
+												   th:value="${user.userAddr2}"/>
+										</div>
+									</td>
+								</tr>
+								<tr>
+									<th>회원탈퇴</th>
+									<td class="form_group quit">
+										<button type="button" class="btn_quit"><p>탈퇴하기</p></button>
+										<input type="password" class="quitPass" style="display: none"/>
+										<span class="quit_result"></span>
+									</td>
+								</tr>
+							</table>
+							<div class="button_container">
+								<button type="button" class="btn-cancel">취소</button>
+								<button type="submit" class="btn_submit">회원정보 수정</button>
+							</div>
+						</form>
+					</div>
+				</div><!-- .articleIn -->
+			</article><!-- .article -->
+		</section>
+	</div>
+</main>
+<th:block th:include="/user/User_footer.html"/>
+<link rel="stylesheet" th:href="@{/css/footer.css}">

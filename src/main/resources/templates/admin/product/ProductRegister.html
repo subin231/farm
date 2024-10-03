@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Administrator</title>
+	<link rel="stylesheet" th:href="@{/css/style_admin.css}">
+</head>
+<body>
+<div id="wrap">
+	<th:block th:include="/admin/Admin_header"/>
+	<main>
+		<th:block th:include="/admin/Admin_aside"/>
+		<section class="prodReg">
+			<section>
+				<h3>상품등록</h3>
+				<article>
+					<form th:action="@{/admin/ProductRegister}" method="post" enctype="multipart/form-data" onsubmit="return confirmSubmission()">
+						<table>
+							<tbody>
+							<tr>
+								<td>상품명</td>
+								<td><input type="text" name="prodName" ></td>
+							</tr>
+							<tr>
+								<td>종류</td>
+								<td>
+									<select name="prodCateType">
+										<option selected disabled>종류</option>
+										<option value="1">과일</option>
+										<option value="2">야채</option>
+										<option value="3">곡류</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>가격</td>
+								<td><input type="number" name="prodPrice" required></td>
+							</tr>
+							<tr>
+								<td>포인트</td>
+								<td>
+									<input type="number" name="prodPoint" required>
+									&nbsp;포인트는 가격의 1% (최대 <span id="maxPoint">0</span> 포인트)
+								</td>
+							</tr>
+							<tr>
+								<td>할인</td>
+								<td>
+									<select name="prodDiscount">
+										<option value="0">없음</option>
+										<option value="5" >5%</option>
+										<option value="10">10%</option>
+										<option value="15">15%</option>
+										<option value="20">20%</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>배송비</td>
+								<td>
+									<label><input type="radio" name="prodDelivery" value="2000" checked> 2,000원</label>&nbsp;
+									<label><input type="radio" name="prodDelivery" value="3000"> 3,000원</label>&nbsp;
+									<label><input type="radio" name="prodDelivery" value="5000"> 5,000원</label>&nbsp;
+									<label><input type="radio" name="prodDelivery" value="0"> 무료</label>
+								</td>
+							</tr>
+							<tr>
+								<td>재고</td>
+								<td><input type="number" name="prodStock" required></td>
+							</tr>
+							<tr>
+								<td>상품이미지</td>
+								<td>
+									<p>상품목록 이미지(약 120 x 120)</p>
+									<input type="file" name="prodImageName1" required>
+									<p>기본정보 이미지(약 240 x 240)</p>
+									<input type="file" name="prodImageName2" required>
+									<p>상품설명 이미지(약 750 x auto)</p>
+									<input type="file" name="prodImageName3" required>
+
+								</td>
+							</tr>
+							<tr>
+								<td>기타</td>
+								<td><textarea name="etc"></textarea></td>
+							</tr>
+							</tbody>
+						</table>
+						<h3>
+							<a th:href="@{/admin/AdminIndex}" class="cancelbtn">취소</a>
+							<input type="submit" value="상품등록"></input>
+						</h3>
+					</form>
+				</article>
+			</section>
+		</section>
+	</main>
+</div>
+<th:block th:include ="/admin/Admin_footer.html"/>
+</body>
+<script>
+	const now = document.querySelector('a#prodreg[href]');
+	if (now) {
+		now.classList.add("now");
+	}
+	function confirmSubmission() {
+		return confirm("등록하시겠습니까?");
+	}
+	// 성공 시 URL 파라미터에서 성공 여부를 확인하여 처리
+	const urlParams = new URLSearchParams(window.location.search);
+	const isSuccess = urlParams.get('success');
+
+	if (isSuccess === 'true') {
+		alert("상품이 성공적으로 등록되었습니다.");
+		window.location.href = '/admin/ProductRegister';
+	} else if (isSuccess === 'false') {
+		alert("상품 등록에 실패하였습니다.");
+	}
+	// 포인트 입력 제한 기능
+	const prodPriceInput = document.querySelector('input[name="prodPrice"]');
+	const prodPointInput = document.querySelector('input[name="prodPoint"]');
+	const maxPointDisplay = document.getElementById('maxPoint'); // 최대 포인트 표시
+
+	// 가격 변경 시 포인트 최대값을 설정
+	prodPriceInput.addEventListener('input', function() {
+		const price = parseFloat(prodPriceInput.value) || 0; // 가격 값 가져오기
+		const maxPoint = Math.floor(price * 0.01); // 최대 포인트 계산 (1%)
+
+		// 최대 포인트 표시 업데이트
+		maxPointDisplay.textContent = maxPoint;
+
+		// 현재 포인트 값이 최대값을 초과하면 최대값으로 설정
+		if (parseFloat(prodPointInput.value) > maxPoint) {
+			prodPointInput.value = maxPoint; // 현재 포인트 값이 최대값을 초과하면 최대값으로 설정
+		}
+	});
+
+	// 포인트 입력 필드의 값이 변경될 때 최대치를 초과하지 않도록 설정
+	prodPointInput.addEventListener('input', function() {
+		const maxPoint = parseFloat(maxPointDisplay.textContent) || 0; // 최대 포인트 가져오기
+		const pointValue = parseFloat(prodPointInput.value) || 0; // 현재 포인트 값 가져오기
+
+		// 현재 포인트 값이 최대값을 초과하면 최대값으로 설정
+		if (pointValue > maxPoint) {
+			prodPointInput.value = maxPoint; // 현재 포인트 값이 최대값을 초과하면 최대값으로 설정
+			alert(`포인트는 최대 ${maxPoint}까지 입력 가능합니다.`); // 경고 메시지 표시
+		}
+	});
+
+	// 초기 포인트 최대값 설정
+	prodPriceInput.dispatchEvent(new Event('input')); // 페이지 로드 시 초기값 설정
+
+
+</script>
+</html>

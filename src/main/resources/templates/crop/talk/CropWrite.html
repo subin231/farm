@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>글쓰기</title>
+<link rel="sssashortcut icon" href="/images/fav.ico" type="image/x-icon">
+<link rel="stylesheet" th:href="@{/css/community.css}">
+    <link rel="stylesheet" th:href="@{/css/croptalk.css}">
+    <script>
+        window.onload = function() {
+            // name 속성으로 hidden input에서 artCate 값 가져오기
+            const artCate = document.querySelector('input[name="artCate"]').value;
+            let now;
+            // 카테고리 기반으로 특정 요소 선택
+            if (artCate === 'CropStory') {
+                now = document.querySelector('.aside_bg .cate_lnb1 li .lnb1');
+            } else if (artCate === 'CropGarden') {
+                now = document.querySelector('.aside_bg .cate_lnb1 li .lnb2');
+            } else if (artCate === 'CropReturnfarm') {
+                now = document.querySelector('.aside_bg .cate_lnb1 li .lnb3');
+            }
+            // 해당 요소에 "now" 클래스 추가
+            if (now) {
+                now.classList.add("now");
+            }
+        };
+    </script>
+</head>
+<body>
+    <div id="container">
+    <th:block th:insert ="~{/grid/_header.html}"/>
+    <th:block th:insert ="~{/grid/_aside_ct.html}"/>
+
+                <section class="write">
+                	<h3>글쓰기</h3>
+                	<article>
+
+                    <form name="artForm" method="post" ModelAttribute="ArticleDTO" th:action="@{/crop/CropWrite}" enctype="multipart/form-data">
+                        <input type="hidden" name="artCate" th:value="${artCate}">
+                        <input type="hidden" name="b_writer" value="">
+
+                        <table>
+                            <tr>
+                                <td>제목</td>
+                                <td><input type="text" name="artTitle" id="artTitle" placeholder="제목을 입력하세요."/></td>
+
+                            </tr>
+                            <tr>
+                                <td>내용</td>
+                                <td>
+                                    <textarea name="artContent"></textarea>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>첨부</td>
+                                <td style="text-align: left;">
+                                    <p style="margin-bottom: 6px;">
+                                        최대 2개 파일 첨부 가능, 각 파일당 최대 10MB 까지 업로드
+                                    </p>
+                                    <input type="file" name="files" style="display: block; margin-bottom: 6px;"/>
+                                    <input type="file" name="files" style="display: block;"/>
+                                </td>
+
+                            </tr>
+                        </table>
+                        <div>
+                            <a th:href="|/crop/${cate}|" class="btnCancel">취소</a>
+                            <input type="submit" class="btnWrite" value="작성완료">
+                        </div>
+
+                    </form>
+                </article>
+            </section>
+                    </div><!-- .articleIn -->
+                </article><!-- .article -->
+            </section>
+        </main><!-- #main -->
+<th:block th:insert ="~{/grid/_footer.html}"/>

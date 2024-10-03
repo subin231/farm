@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>귀농학교</title>
+    <link rel="sssashortcut icon" href="/images/fav.ico" type="image/x-icon">
+    <link rel="stylesheet" th:href="@{/css/croptalk.css}">
+
+    <script th:inline="javascript">
+        var cate = /*[[${cate}]]*/ 'b203'
+        console.log(cate)
+
+    </script>
+    <script>
+        function increaseHitAndRedirect(artNo, redirectUrl) {
+            fetch('crop/increaseHit?artNo=' + artNo, {
+                method: 'POST',
+            }).then(function(response) {
+                if (response.ok) {
+                    window.location.href = redirectUrl;
+                } else {
+                    console.error('Error increasing hit count');
+                }
+            }).catch(function(error) {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+
+</head>
+<body>
+<div id="container">
+    <th:block th:include="/grid/_header.html"/>
+    <th:block th:include="/grid/_aside_ct.html"/>
+    <section class="list">
+        <h3>글목록</h3>
+
+        <article>
+            <table border="0">
+                <tr>
+                    <th>번호</th>
+                    <th>제목</th>
+                    <th>글쓴이</th>
+                    <th>날짜</th>
+                    <th>조회</th>
+                </tr>
+                <tr th:each="article : ${pageResponseDTO.dtoList}">
+                    <td>[[${article.artNo}]]</td>
+                    <td>
+                        <a href="javascript:void(0);" th:onclick="increaseHitAndRedirect([[${article.artNo}]], '/crop/CropReturnfarm/CropView/' + [[${article.artNo}]]);">
+                            [[${article.artTitle}]]&nbsp;&#91;[[${article.artComment}]]&#93;
+                        </a>
+                    </td>
+                    <td>[[${article.artNick}]]</td>
+                    <td>[[${article.artRdate}]]</td>
+                    <td>[[${article.artHit}]]</td>
+                </tr>
+            </table>
+        </article>
+        <form th:action="@{/crop/CropReturnfarm}" class="search">
+            <select name="type">
+                <option value="title">제목</option>
+                <option value="content">내용</option>
+                <option value="title_content">제목+내용</option>
+                <option value="writer">글쓴이</option>
+            </select>
+
+            <input type="text" name="keyword" placeholder="제목 키워드, 글쓴이 검색">
+            <input type="submit" value="검색">
+        </form>
+
+        <div class="paging">
+            <th:block th:if="${pageResponseDTO.prev}">
+                <a th:href="@{/crop/CropReturnfarm(pg=${pageResponseDTO.start-1})}" class="prev">이전</a>
+            </th:block>
+
+            <th:block th:each="num:${#numbers.sequence(pageResponseDTO.start, pageResponseDTO.end)}">
+                <a th:href="@{/crop/CropReturnfarm(pg=${num})}" th:classappend="${num == pageResponseDTO.pg} ? ' current' : ''">[[${num}]]</a>
+            </th:block>
+
+            <th:block th:if="${pageResponseDTO.next}">
+                <a th:href="@{/crop/CropReturnfarm(pg=${pageResponseDTO.end+1})}" class="next">다음</a>
+            </th:block>
+        </div>
+        <!-- 글쓰기 버튼 -->
+        <a th:href="@{/crop/CropReturnfarm/CropWrite}" class="btnWrite" th:onclick="${#authentication == null or !#authentication.authenticated} ? 'return alertLogin()' : ''">글쓰기</a>
+    </section>
+
+    </main>
+    <th:block th:include ="/grid/_footer.html"/>
+</div>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>자주묻는질문</title>
+    <link rel="sssashortcut icon" href="/images/fav.ico" type="image/x-icon">
+    <link rel="stylesheet" th:href="@{/css/community.css}">
+    <!-- 화면당 적용할 CSS만 추가하면됨 -->
+    <script>
+        function increaseHitAndRedirect(artNo, redirectUrl) {
+            fetch('/community/increaseHit?artNo=' + artNo, {
+                method: 'POST',
+            }).then(function(response) {
+                if (response.ok) {
+                    window.location.href = redirectUrl;
+                } else {
+                    console.error('Error increasing hit count');
+                }
+            }).catch(function(error) {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+    <script>
+        window.onload = function() {
+            const now = document.querySelector('.cate_lnb li:nth-child(5) a');
+            if (now) {
+                now.classList.add("now");
+            }
+        };
+    </script>
+</head>
+<body>
+<div id="wrapper">
+    <th:block th:include ="/grid/_header.html"/>
+    <th:block th:include ="/grid/_aside_cm.html"/>
+
+    <section class="list">
+        <h3>글목록</h3>
+
+        <article>
+            <table border="0">
+                <tr>
+                    <th>번호</th>
+                    <th>제목</th>
+                    <th>글쓴이</th>
+                    <th>날짜</th>
+                    <th>조회</th>
+                </tr>
+                <tr th:each="article : ${pageResponseDTO.dtoList}">
+                    <td>[[${article.artNo}]]</td>
+                    <td>
+                        <a href="javascript:void(0);" th:onclick="increaseHitAndRedirect([[${article.artNo}]], '/community/CommunityFaq/CommunityView/' + [[${article.artNo}]]);">
+                            [[${article.artTitle}]]&nbsp;&#91;[[${article.artComment}]]&#93;
+                        </a>
+                    </td>
+                    <td>[[${article.artNick}]]</td>
+                    <td>[[${article.artRdate}]]</td>
+                    <td>[[${article.artHit}]]</td>
+                </tr>
+            </table>
+        </article>
+        <form th:action="@{/community/CommunityFaq}" class="search">
+            <select name="type">
+                <option value="title">제목</option>
+                <option value="content">내용</option>
+                <option value="title_content">제목+내용</option>
+                <option value="writer">글쓴이</option>
+            </select>
+
+            <input type="text" name="keyword" placeholder="제목 키워드, 글쓴이 검색">
+            <input type="submit" value="검색">
+        </form>
+
+        <div class="paging">
+            <th:block th:if="${pageResponseDTO.prev}">
+                <a th:href="@{/community/CommunityFaq(pg=${pageResponseDTO.start-1})}" class="prev">이전</a>
+            </th:block>
+
+            <th:block th:each="num:${#numbers.sequence(pageResponseDTO.start, pageResponseDTO.end)}">
+                <a th:href="@{/community/CommunityFaq(pg=${num})}" th:classappend="${num == pageResponseDTO.pg} ? ' current' : ''">[[${num}]]</a>
+            </th:block>
+
+            <th:block th:if="${pageResponseDTO.next}">
+                <a th:href="@{/community/CommunityFaq(pg=${pageResponseDTO.end+1})}" class="next">다음</a>
+            </th:block>
+        </div>
+        <!-- 글쓰기 버튼 -->
+        <a th:href="@{/community/CommunityFaq/CommunityWrite}" class="btnWrite" th:onclick="${#authentication == null or !#authentication.authenticated} ? 'return alertLogin()' : ''">글쓰기</a>
+    </section>
+
+
+    </main><!-- #main -->
+<th:block th:include="/grid/_footer.html"/>
+</div><!-- warapper end -->
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrator</title>
+    <link rel="stylesheet" th:href="@{/css/style_admin.css}">
+</head>
+<body>
+<div id="wrap">
+    <th:block th:include="/admin/Admin_header"/>
+    <main>
+        <th:block th:include="/admin/Admin_aside"/>
+        <section>
+            <h3>관리자 메인</h3>
+            <article>
+                <h3>
+                    <a th:href="@{/admin/ProductList}">상품현황</a>
+                    <a th:href="@{/admin/ProductList}" class="more">더보기</a>
+                </h3>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>상품번호</th>
+                        <th>상품명</th>
+                        <th>구분</th>
+                        <th>가격</th>
+                        <th>재고</th>
+                        <th>등록일</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:if="${#lists.isEmpty(productDTOs)}">
+                        <td colspan="10" style="width: 100%;">등록된 상품이 없습니다.</td>
+                    </tr>
+                    <tr th:each="product,stat : ${productDTOs}" th:if="${stat.index <5}">
+                        <td>[[${product.prodNo}]]</td>
+                        <td>[[${product.prodName}]]</td>
+                        <td>[[${product.prodCateType}]]</td>
+                        <td class="price" >[[${product.prodPrice}]]원</td>
+                        <td>[[${product.prodStock}]]</td>
+                        <td>[[${product.Date}]]</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </article>
+            <article>
+                <h3>
+                    <a th:href="@{/admin/OrderList}">주문현황</a>
+                    <a th:href="@{/admin/OrderList}" class="more">더보기</a>
+                </h3>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>주문번호</th>
+                        <th>상품명</th>
+                        <th>판매가격</th>
+                        <th>수량</th>
+                        <th>배송비</th>
+                        <th>합계</th>
+                        <th>주문자</th>
+                        <th>주문일</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:if="${orderDTOs == null }">
+                        <td colspan="11" style="width: 100%;">등록된 주문이 없습니다.</td>
+                    </tr>
+                    <tr th:each="order,stat:${orderDTOs}" th:if="${stat.index < 5}">
+                        <td class="no">[[${order.orderNo}]]</td>
+                        <td>[[${order.prodName}]]</td>
+                        <td class="price">[[${order.orderPrice}]]</td>
+                        <td>[[${order.orderStock}]]</td>
+                        <td class="price">[[${order.orderDeliveryFee}]]</td>
+                        <td class="price">합계</td>
+                        <td>[[${order.orderSendName}]]</td>
+                        <td>[[${order.Date}]]</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </article>
+            <article>
+                <h3>
+                    <a th:href="@{/admin/UserList}">회원현황</a>
+                    <a th:href="@{/admin/UserList}" class="more">더보기</a>
+                </h3>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>회원아이디</th>
+                        <th>이름</th>
+                        <th>닉네임</th>
+                        <th>휴대폰</th>
+                        <th>이메일</th>
+                        <th>등급</th>
+                        <th>회원가입일</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:if="${userDtos == null}">
+                        <td colspan="10" style="width: 100%;">등록된 회원이 없습니다.</td>
+                    </tr>
+                    <tr th:each="user,stat:${userDtos}" th:if="${stat.index < 5}">
+                        <td th:text="${user.userUid}"></td>
+                        <td th:text="${user.userName}"></td>
+                        <td th:text="${user.userNick}"></td>
+                        <td th:text="${user.userHp}"></td>
+                        <td th:text="${user.userEmail}"></td>
+                        <td th:text="${user.userRole}"></td>
+                        <td th:text="${user.date}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </article>
+        </section>
+    </main>
+</div>
+<th:block th:replace="/admin/Admin_footer.html"/>
+</body>
+</html>

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이벤트</title>
+    <link rel="shortcut icon" href="/images/fav.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/css/event.css">
+    <!-- FullCalendar version 6 -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.0/index.global.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@6.1.0/index.global.min.js'></script>
+    <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.0/index.global.min.css'/>
+
+    <!-- bootstrap 추가 -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var calendarEl = document.getElementById('calendar');
+            var selectedEvent;
+            var calendar;
+
+            fetch('/event/data')
+                .then(response => response.json())
+                .then(events => {
+                    const calendarEvents = events.map(event => ({
+                        id: event.no,
+                        color: '#ecb856',
+                        title: event.title,
+                        start: event.start_date,
+                        end: event.end_date,
+                        extendedProps: {
+                            content: event.content
+                        }
+                    }));
+
+                    calendar = new FullCalendar.Calendar(calendarEl, {
+                        initialView: 'dayGridMonth',
+                        selectable: true,
+                        dayMaxEventRows: true,
+                        googleCalendarApiKey: 'AIzaSyBuZSoGqnsiPkvHBCRjqV8FOQ7O_3OXS4s',
+                        eventSources: [
+                            {
+                                googleCalendarId: 'ko.south_korea#holiday@group.v.calendar.google.com',  // 대한민국 공휴일 캘린더
+                                className: 'korea',  // 스타일 지정
+                                color: '#e70000',  // 이벤트 색상
+                                textColor: 'white'  // 텍스트 색상
+                            }
+                        ],
+                        events: calendarEvents,
+                        dateClick: function(info) {
+                            selectedEvent = null;
+                            $('#eventModal').modal('show');
+                            $('#eventTitleInput').val('');
+                            $('#eventContentInput').val('');
+                            $('#eventStartDateInput').val(info.dateStr + 'T00:00'); // 클릭한 날짜로 시작일 설정
+                            $('#eventEndDateInput').val(info.dateStr + 'T23:59'); // 클릭한 날짜로 종료일 설정
+                        },
+                        eventClick: function(info) {
+                            info.jsEvent.preventDefault();
+                            var startDate = info.event.start ? info.event.start.toISOString().slice(0, 16) : '';
+                            var endDate = info.event.end ? info.event.end.toISOString().slice(0, 16) : '';
+
+                            selectedEvent = info.event;
+                            $('#eventModal').modal('show');
+                            $('#eventTitleInput').val(info.event.title);
+                            $('#eventContentInput').val(info.event.extendedProps.content);
+                            $('#eventStartDateInput').val(startDate);
+                            $('#eventEndDateInput').val(endDate);
+                        }
+                    });
+
+                    calendar.render();
+                })
+                .catch(error => console.error('fetch error:', error));
+
+            $('#saveEventButton').on('click', function() {
+                var newTitle = $('#eventTitleInput').val();
+                var newContent = $('#eventContentInput').val();
+
+                // 시간을 ISO 8601 형식으로 변환 안하는게 좋음 pc시스템 데이터로 변경(2024-09-23)
+                //var newStartDate = new Date($('#eventStartDateInput').val()).toISOString();
+                var newStartDate = $('#eventStartDateInput').val()
+                //var newEndDate = new Date($('#eventEndDateInput').val()).toISOString();
+                var newEndDate = $('#eventEndDateInput').val()
+
+
+                if (selectedEvent) {
+                    $.ajax({
+                        url: '/event/update',
+                        type: 'PUT',
+                        contentType: 'application/json',
+                        data: JSON.stringify({
+                            no: selectedEvent.id,
+                            title: newTitle,
+                            content: newContent,
+                            start_date: newStartDate,
+                            end_date: newEndDate
+                        }),
+                        success: function() {
+                            selectedEvent.setProp('title', newTitle);
+                            selectedEvent.setExtendedProp('content', newContent);
+                            selectedEvent.setStart(newStartDate);
+                            selectedEvent.setEnd(newEndDate);
+                            alert('Event 수정이 완료되었습니다.')
+                            $('#eventModal').modal('hide');
+                        },
+                        error: function(err) {
+                            console.error('updating error:', err);
+                        }
+                    });
+                } else {
+                    $.ajax({
+                        url: '/event/create',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({
+                            title: newTitle,
+                            content: newContent,
+                            start_date: newStartDate,
+                            end_date: newEndDate
+                        }),
+                        success: function(response) {
+                            console.log('서버응답 : ',response);
+                            var newEvent = {
+                                id: response.id,
+                                title: response.title,
+                                start: response.start_date,
+                                end: response.end_date,
+                                extendedProps: {
+                                    content: response.content
+                                }
+                            };
+                            console.log('추가될 이벤트:', newEvent);
+                            calendar.addEvent(newEvent);
+
+                            calendar.render();
+                            if (calendar.render == true){
+                                console.log('정상작동합니다.');
+                            }else{
+                                console.log('랜더링 실패')
+                            }
+                            console.log(calendar.render());
+                            $('#eventModal').modal('hide');
+                            alert("신규 Event 생성이 완료되었습니다.");
+                        },
+                        error: function(err) {
+                            console.error('creating error:', err);
+                        }
+                    });
+
+                }
+            });
+
+            $('#deleteEventButton').on('click', function() {
+                if (selectedEvent) {
+                    $.ajax({
+                        url: '/event/delete/' + selectedEvent.id,
+                        type: 'DELETE',
+                        success: function() {
+                            alert("Event가 삭제되었습니다.")
+                            selectedEvent.remove();
+                            $('#eventModal').modal('hide');
+                        },
+                        error: function(err) {
+                            console.error('deleting error:', err);
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+<div id="wrapper">
+    <div th:include="/grid/_header.html"></div>
+    <div th:include="/grid/_aside_et.html"></div>
+    <div id="container">
+        <section class="calendar">
+            <div id='calendar'></div>
+        </section>
+    </div>
+</div>
+
+
+<!-- popup창 추가 부분 -->
+<div class="modal fade" id="eventModal"  role="dialog" aria-labelledby="eventModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="eventModalLabel">이벤트 상세 정보</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="eventTitleInput">제목</label>
+                    <input type="text" class="form-control" id="eventTitleInput">
+                </div>
+                <div class="form-group">
+                    <label for="eventContentInput">내용</label>
+                    <textarea class="form-control" id="eventContentInput" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="eventStartDateInput">시작일</label>
+                    <input type="datetime-local" class="form-control" id="eventStartDateInput">
+                </div>
+                <div class="form-group">
+                    <label for="eventEndDateInput">종료일</label>
+                    <input type="datetime-local" class="form-control" id="eventEndDateInput">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+                <button type="button" class="btn btn-danger" id="deleteEventButton">삭제</button>
+                <button type="button" class="btn btn-primary" id="saveEventButton">저장</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:include="/grid/_footer.html"></div>
+</body>
+</html>

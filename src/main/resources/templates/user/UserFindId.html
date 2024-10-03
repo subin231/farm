@@ -1,0 +1,176 @@
+<th:block th:include="user/User_header.html"/>
+<script th:src="@{/js/utils.js}"></script>
+<script>
+	window.onload = function (){
+		const form = document.getElementsByTagName('form')[0];
+		const btnSendEmail = document.querySelector('.btnSendEmail');
+		const btnAuthEmail = document.querySelector('.btnAuthEmail');
+		const resultEmail = document.querySelector('.resultEmail');
+		const resultAuth = document.querySelector('.resultAuth');
+		const btn_cancel = document.querySelector('.btn_cancel');
+
+		const modal_name = document.querySelector('.modal_name');
+		const modal_uid = document.querySelector('.modal_uid');
+		const modal_email = document.querySelector('.modal_email');
+		const modal_rdate = document.querySelector('.modal_rdate');
+
+
+		const modal = document.querySelector('.modal');
+		const modalClose = document.querySelector('.close_btn');
+
+		btnSendEmail.onclick = async function (){
+
+			const type    = 'email';
+			const value   = form.userEmail.value;
+
+			const jsonData = {
+				"userName" : form.userName.value,
+				"userEmail" : value
+			};
+
+			console.log("json : "+jsonData)
+
+			const data = await fetchPost(`/user/UserFindId/${type}/${value}`,jsonData);
+
+			if(!data){
+				showResultInvalid(resultEmail, '등록된 정보와 일치하지 않습니다.')
+			}else{
+				showResultValid(resultEmail,'이메일이 전송되었습니다.' );
+				console.log(data.userRegDate);
+
+				modal_name.innerText  = data.userName;
+				modal_uid.innerText  = data.userUid;
+				modal_email.innerText  = data.userEmail;
+				modal_rdate.innerText  = data.userRegDate.split(' ')[0];
+			}
+		}
+
+		btnAuthEmail.onclick = async function (){
+
+			const code = document.querySelector('#code').value;
+
+			console.log(code);
+
+			if(code == null || code === ""){
+				showResultInvalid(resultAuth,'인증번호를 입력해 주세요.');
+			}else{
+				const jsonData = {"code": code};
+
+				const data = await fetchPost('/user/UserRegister/email', jsonData);
+				console.log(data);
+
+				if(data.result){
+					showResultValid(resultAuth,'인증이 완료되었습니다.');
+					modal.style.display = 'block';
+					findUser.style.display = 'block';
+				}else{
+					showResultInvalid(resultAuth,'인증번호가 일치하지 않습니다.');
+				}
+			}
+		}
+
+		modalClose.addEventListener('click',function(){
+			//display 속성을 none으로 변경
+			modal.style.display = 'none';
+			window.location.replace('/user/UserLogin');
+		});
+
+		btn_cancel.addEventListener('click', function (){
+			window.location.replace('/user/UserLogin');
+		});
+
+	}
+</script>
+<title>아이디찾기</title>
+<link rel="stylesheet" th:href="@{/css/user/findid.css}">
+<link rel="stylesheet" th:href="@{/css/user/findidresult.css}">
+
+<div class="modal">
+	<section class="modal_popup">
+		<div class="top_txt">
+			<span>가입된 아이디가 총 1 개 있습니다.</span>
+		</div>
+
+		<!-- 사용자 정보가 있을 때 -->
+		<div>
+			<table class="modal_table">
+				<tr>
+					<td>이름</td>
+					<td>
+						<p><span class="modal_name"></span></p>
+					</td>
+				</tr>
+				<tr>
+					<td>아이디</td>
+					<td>
+						<p><span class="modal_uid"></span></p>
+					</td>
+				</tr>
+				<tr>
+					<td>이메일</td>
+					<td>
+						<p><span class="modal_email"></span></p>
+					</td>
+				</tr>
+				<tr>
+					<td>가입일</td>
+					<td>
+						<p><span class="modal_rdate"></span></p>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<button type="button" class="close_btn">닫기</button>
+	</section><!-- section modal -->
+</div>
+
+        <main>
+            <div class="mainIn">
+            <div class="container">
+		            <form>
+		                <section>
+		                    <div class="headtxt">
+		                        <span>아이디 찾기</span>
+		                    </div>
+		                        <table>
+		                            <tr>
+		                                <td>이름</td>
+		                                <td>
+		                                    <input type="text" id="name" name="userName"  placeholder="이름 입력">
+		                                </td>
+		                            </tr>
+		                            <tr>
+		                                <td>이메일</td>
+		                                <td>
+		                                    <div class="form_group">
+		                                        <input type="email" name="userEmail" id="email" placeholder="이메일 입력">
+		                                        <button type="button" class="btnSendEmail" id="btnSendEmail">인증번호 받기</button>
+		                                  		<span class=resultEmail></span>
+		                                    </div>
+		                                    <div class="form_group">
+		                                        <input type="text" id="code" name="auth" placeholder="인증번호 입력">
+		                                        <button type="button" class="btnAuthEmail" id="btnAuthEmail">확인</button>
+												<span class="resultAuth" ></span>
+		                                    </div>
+		                                </td>
+		                            </tr>
+		                        </table>
+		               	 </section>
+		                <div class="findnote">
+		                    <p>
+		                    회원가입시 이메일 주소와 입력한 이메일 주소가 같아야, 인증번호를 받을 수 있습니다.<br>
+		                    인증번호를 입력 후 확인 버튼을 누르세요. 
+		                    </p>
+		                </div>
+		                <div class="btns">
+		                    <button type="button" class="btn_cancel">취소</button>
+		                </div>
+		            </form>
+       		 </div>
+                
+                
+            </div>
+        </main>
+
+	<th:block th:include="user/User_footer.html"/>
+

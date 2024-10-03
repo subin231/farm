@@ -1,0 +1,70 @@
+<!-- croptalk aside : 농작물이야기 -->
+<!-- #main -->
+  <main id="main cf">
+      <section class="mainIn cf">
+          <div class="sub_bg">
+              <img th:src="@{/images/sub_top_tit3.png}" alt="Croptalk" class="sub_tit">
+          </div>
+          <aside class="aside">
+              <div class="sidebar">
+                  <div class="aside_cate">
+                      <img th:src="@{/images/sub_aside_cate3_tit.png}" alt="Croptalk 농작물이야기">
+                  </div><!-- .aside_cate -->
+                  <div class="aside_bg">
+                      <ul class="cate_lnb1">
+	                       <li><a th:href="@{/crop/CropStory}" class="lnb1">농작물이야기</a></li>
+	                       <li><a th:href="@{/crop/CropGarden}" class="lnb2">텃밭가꾸기</a></li>
+	                       <li><a th:href="@{/crop/CropReturnfarm}" class="lnb3">귀농학교</a></li>
+                      </ul><!-- .cate_lnb -->
+                  </div><!-- .aside_bg -->
+              </div><!-- .sidebar -->
+          </aside><!-- .aside -->
+
+          <article class="article"><!-- .article start-->
+              <div class="articleIn"><!-- .articleIn start-->
+                  <nav>
+                      <h2>
+                          <div>
+                              <th:block th:if="${str1 != null}">
+                                  <img th:src="@{/images/sub_nav_tit_cate3_tit1.png}" th:alt="'농작물이야기'" th:if="${str1.equals('b201')}">
+                                  <img th:src="@{/images/sub_nav_tit_cate3_tit2.png}" th:alt="'텃밭가꾸기'" th:if="${str1.equals('b202')}">
+                                  <img th:src="@{/images/sub_nav_tit_cate3_tit3.png}" th:alt="'귀농학교'" th:if="${!str1.equals('b201') and !str1.equals('b202')}">
+                              </th:block>
+                          </div>
+
+                          <!--                      	<c:choose>-->
+<!--                            	<c:when test="${cate eq 'b201'}">-->
+<!--                            		<img src="/images/sub_nav_tit_cate3_tit1.png" alt="농작물이야기">-->
+<!--								</c:when>-->
+<!--                           	    <c:when test="${cate eq 'b202'}">-->
+<!--                            		<img src="/images/sub_nav_tit_cate3_tit2.png" alt="텃밭가꾸기">-->
+<!--								</c:when>-->
+<!--                            	<c:otherwise>-->
+<!--                            		<img src="/images/sub_nav_tit_cate3_tit3.png" alt="귀농학교">-->
+<!--								</c:otherwise>-->
+<!--						</c:choose>-->
+                      </h2>
+                      <p class="location">
+                          <img th:src="@{/images/sub_page_nav_ico.gif}" alt="메뉴">
+                          <span>HOME </span>
+                          <span>농작물이야기 </span>
+
+                          <th:block th:if="${str1 != null}">
+                              <strong th:text="'농작물이야기'" th:if="${str1.equals('b201')}"></strong>
+                              <strong th:text="'텃밭가꾸기'" th:if="${str1.equals('b202')}"></strong>
+                              <strong th:text="'귀농학교'" th:if="${!str1.equals('b201') and !str1.equals('b202')}"></strong>
+                          </th:block>
+
+                      <!--                          <c:choose>-->
+<!--                            	<c:when test="${cate eq 'b201'}">-->
+<!--                            		<strong>농작물이야기</strong>-->
+<!--								</c:when>-->
+<!--                            	<c:when test="${cate eq 'b202'}">-->
+<!--                            		<strong>텃밭가꾸기</strong>-->
+<!--								</c:when>-->
+<!--                            	<c:otherwise>-->
+<!--                            		<strong>귀농학교</strong>-->
+<!--								</c:otherwise>-->
+<!--						</c:choose>-->
+                      </p><!-- .location end-->
+                  </nav>

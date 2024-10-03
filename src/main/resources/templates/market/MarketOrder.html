@@ -1,0 +1,427 @@
+<th:block th:include ="grid/_header.html"/>
+<title>주문하기</title>
+<link rel="stylesheet" th:href="@{/css/order.css}">
+<script th:src="@{/js/postcode.js}"></script>
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script>
+    window.onload = function () {
+        updateTotal();
+        const pointBtn = document.getElementsByClassName('point_btn')[0];
+        const point1 = document.getElementsByClassName('point')[0];
+        const pointUse = document.getElementsByClassName('pointUse')[0];
+        const userBtn = document.getElementsByClassName('user_btn')[0];
+
+        const recepitName = document.getElementsByClassName('recepit')[0];
+        const recepitHp = document.getElementsByClassName('rec_hp')[0];
+
+        pointBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const inNum = point1.value;
+
+            if ([[${user.userTotalPoint}]] < inNum) {
+                alert('포인트가 모자랍니다!');
+            } else {
+                pointUse.innerText = inNum + "p";
+            }
+        });
+        // class="recepit
+        // class="rec_hp"
+        userBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+
+            recepitName.innerText = "[[${#authentication.principal.user.userName}]]";
+            recepitName.value = "[[${#authentication.principal.user.userName}]]";
+            recepitHp.innerText = "[[${#authentication.principal.user.userHp}]]";
+            recepitHp.value = "[[${#authentication.principal.user.userHp}]]";
+        })
+
+        const btnOrder = document.getElementsByClassName('btn_order')[0];
+
+        btnOrder.addEventListener('click', (e) => {
+            e.preventDefault();
+            let recepit = document.getElementsByClassName('recepit')[0];
+            let recHp = document.getElementsByClassName('rec_hp')[0];
+            let recZip = document.getElementsByClassName('post_sch')[0];
+            let recAddr1 = document.getElementsByClassName('addr1')[0];
+            let recAddr2 = document.getElementsByClassName('addr2')[0];
+            let payment = document.querySelector('input[name="pay"]:checked');
+            let orderDesc = document.getElementsByClassName('etc')[0];
+
+            console.log(payment.value);
+            let ReceiveName = document.getElementById('recepit');
+            let ReceiveHp = document.getElementById('recHp');
+            let orderAddr = document.getElementById('recAddr');
+            let orderPay = document.getElementById('payment');
+            let orderMemo = document.getElementById('orderDesc');
+
+            let total_count = document.getElementById('total_count');
+            let total_price = document.getElementById('total_price');
+            let total_discount = document.getElementById('total_discount');
+            let total_point = document.getElementById('total_point');
+            let total_delivery = document.getElementById('total_delivery');
+            let total_orderPrice = document.getElementById('total_orderPrice');
+
+            console.log("123" + document.getElementById('total_count').value);
+            console.log("123" + document.getElementById('total_count'));
+            console.log("1234" + total_count.value);
+
+
+            let counts = document.getElementById('totalCount');
+            let prices = document.getElementById('totalPrice');
+            let discounts = document.getElementById('totalDiscount');
+            let points = document.getElementById('totalPoint');
+            let deliveries = document.getElementById('totalDelivery');
+            let orderPrices = document.getElementById('totalOrderPrice');
+
+            let productNum = document.getElementById('productNum');
+            let usePoint = document.getElementById('usePoint')
+
+            usePoint.value = point1.value;
+            productNum.value = parseInt(document.getElementsByClassName('prodNo')[0].value.trim(), 10);
+
+            console.log("123123123" + productNum.value)
+            console.log("44444" + usePoint.value)
+
+            // 받는사람
+            ReceiveName.value = recepit.value;
+            // 전화번호
+            ReceiveHp.value = recHp.value;
+            // 주소 1
+            orderAddr.value = recZip.value + '_' + recAddr1.value + '_' + recAddr2.value;
+
+            console.log("addr : " + orderAddr.value)
+
+            // 결제방법
+            orderPay.value = payment.value;
+            // 주문 기타 정보
+            orderMemo.value = orderDesc.value;
+            // 상품갯수
+            counts.value = total_count.value;
+            // 할인 전 가격
+            prices.value = total_price.value;
+            // 할인가격
+            discounts.value = total_discount.value;
+            // 포인트
+            points.value = total_point.value;
+            // 배달료
+            deliveries.value = total_delivery.value;
+            // 총 가격
+            orderPrices.value = total_orderPrice.value;
+
+            let form = document.getElementById('formData');
+            let formData = new FormData(form);
+            prodNum.forEach(value => {
+                formData.append("No", value);
+            });
+            prodCount.forEach(value => {
+                formData.append("Count", value);
+            })
+            for (const [key, value] of formData.entries()) {
+                console.log("ddddddd" + key, value)
+            }
+            fetch('/market/MarketOrder', {
+                method: 'POST',
+                body: formData
+            })
+                .then(resp => resp.json())
+                .then(data => {
+                    console.log("22222221 : " + data);
+                    if (data.success) {
+                        alert('결제 정보가 등록되었습니다!');
+                        location.href = "/";
+                    } else {
+                        alert('결제 정보 등록에 실패하였습니다');
+                    }
+
+                })
+                .catch(err => {
+                    console.log(err);
+                });
+
+            console.log(prodNum);
+            console.log(prodCount);
+
+        });
+    }
+
+    let prodNum = [];
+    let prodCount = [];
+
+    function updateTotal() {
+        let totalCount = 0;
+        let totalPrice = 0;
+        let totalDiscount = 0;
+        let totalOrderPrice = 0;
+        let totalNoDiscount = 0;
+        let totalPoint = 0;
+        let maxDelivery = 0;
+
+        let rows = document.querySelectorAll('.marketList tr');
+
+        for (let row of rows) {
+            let count = parseInt(row.children[3].innerText.trim(), 10);
+            let discount = parseInt(row.children[4].innerText.replace('%', '').trim(), 10);
+            let point = parseInt(row.children[5].innerText.replace('p', '').trim(), 10);
+            let price = parseInt(row.children[6].innerText.replace('원', '').trim(), 10);
+            let delivery = parseInt(row.getElementsByClassName('prodDelivery')[0].value.trim(), 10);
+            let prodNo = parseInt(row.getElementsByClassName('prodNo')[0].value.trim(), 10);
+
+            console.log("321321" + prodNo);
+
+            const orderPrice = count * price;
+            const prodDiscount = (orderPrice * discount) / 100;
+
+            totalCount += count;
+            totalDiscount += prodDiscount;
+            totalPrice += price;
+            totalPoint += point * count;
+            totalOrderPrice += orderPrice - prodDiscount;
+            totalNoDiscount += price * count;
+            maxDelivery = Math.max(maxDelivery, delivery);
+
+            prodNum.push(prodNo);
+            prodCount.push(count);
+
+        }
+
+        document.getElementById('total_count').innerText = totalCount + "개";
+        document.getElementById('total_count').value = totalCount;
+        document.getElementById('total_price').innerText = totalNoDiscount + "원";
+        document.getElementById('total_price').value = totalNoDiscount;
+        document.getElementById('total_discount').innerText = totalDiscount + "원";
+        document.getElementById('total_discount').value = totalDiscount;
+        document.getElementById('total_point').innerText = totalPoint + "P";
+        document.getElementById('total_point').value = totalPoint;
+        if (totalOrderPrice > 30000) {
+            document.getElementById('total_delivery').innerText = 0 + "원";
+            document.getElementById('total_delivery').value = 0;
+        } else {
+            document.getElementById('total_delivery').innerText = maxDelivery + "원";
+            document.getElementById('total_delivery').value = maxDelivery;
+        }
+        document.getElementById('total_orderPrice').innerText = totalOrderPrice + "원";
+        document.getElementById('total_orderPrice').value = totalOrderPrice;
+
+
+    }
+</script>
+<!-- #main -->
+<main id="main" class="cf">
+    <section class="mainIn cf">
+        <div class="sub_bg">
+            <img th:src="@{/images/sub_top_tit2.png}" alt="MARKET" class="sub_tit">
+        </div><!-- .sub_bg -->
+        <aside class="aside">
+            <div class="sidebar">
+                <div class="aside_cate">
+                    <img th:src="@{/images/sub_aside_cate2_tit.png}" alt="Buying in the Market 장보기">
+                </div><!-- .aside_cate -->
+                <div class="aside_bg">
+                    <ul class="cate_lnb_real">
+                        <li><a href="#">장보기</a></li>
+                    </ul><!-- .cate_lnb -->
+                </div><!-- .aside_bg -->
+            </div><!-- .sidebar -->
+        </aside><!-- .aside -->
+        <article class="article">
+            <div class="articleIn cf">
+                <nav>
+                    <h2><img th:src="@{/images/sub_nav_tit_cate2_tit1.png}" alt="장보기"></h2>
+                    <p class="location">
+                        <img th:src="@{/images/sub_page_nav_ico.gif}" alt="메뉴">
+                        <span>HOME </span>
+                        <span>장보기 </span>
+                        <strong>장보기</strong>
+                    </p><!-- .location -->
+                </nav>
+
+                <h3 class="tb_tit">주문상춤 전체</h3><!-- .tb_tit -->
+                <table class="tb1">
+                    <colgroup>
+                        <col style="width: 10%">
+                        <col style="width: 12%">
+                        <col style="width: 28%">
+                        <col style="width: 10%">
+                        <col style="width: 10%">
+                        <col style="width: 10%">
+                        <col style="width: 10%">
+                        <col style="width: 10%">
+                    </colgroup>
+                    <tr>
+                        <th>이미지</th>
+                        <th>종류</th>
+                        <th>상품명</th>
+                        <th>수량</th>
+                        <th>할인</th>
+                        <th>포인트</th>
+                        <th>가격</th>
+                        <th>소계</th>
+                    </tr>
+                    <tbody class="marketList">
+                    <tr th:if="${carts == null}">
+                        <td colspan="10" class="td_first">장바구니에 상품이 없습니다.</td>
+                    </tr>
+                    <tr th:each="cart:${carts}" th:if="${carts != null}">
+                        <td class="pic"><img th:src="@{'/uploads/'+${cart.prodDTO.prodImage1}}" alt="제품 이미지 1">
+                        </td>
+                        <td>
+                            <th:block th:if="${cart.prodDTO.prodCateType == 1}">
+                                과일
+                            </th:block>
+                            <th:block th:if="${cart.prodDTO.prodCateType == 2}">
+                                곡류
+                            </th:block>
+                            <th:block th:if="${cart.prodDTO.prodCateType == 3}">
+                                야채
+                            </th:block>
+                        </td>
+                        <td>[[${cart.prodDTO.prodName}]]</td>
+                        <td class="prodCount">[[${cart.prodDTO.cartProdCount}]]</td>
+                        <td class="prodDiscount">[[${cart.prodDTO.prodDiscount}]]%</td>
+                        <td class="prodPoint">[[${cart.prodDTO.prodPoint}]]p</td>
+                        <td class="prodPrice">[[${cart.prodDTO.prodPrice}]]원
+                            <input type="hidden" class="prodDelivery" th:value="${cart.prodDTO.prodDelivery}">
+                            <input type="hidden" class="prodNo" th:value="${cart.prodDTO.prodNo}"/>
+                        </td>
+                        <td class="totalPrice"><strong>[[${(cart.prodDTO.prodPrice - (cart.prodDTO.prodPrice *
+                            cart.prodDTO.prodDiscount / 100)) * cart.prodDTO.cartProdCount}]]</strong>원
+                        </td>
+                    </tr>
+                    </tbody>
+                </table><!-- .tb1 -->
+
+                <div class="order_info cf">
+                    <h4 class="order_tit">주문정보 입력</h4>
+                    <table class="order_tb cf">
+                        <colgroup>
+                            <col style="width: 23.52%">
+                            <col style="width: 76.48%">
+                        </colgroup>
+                        <tr>
+                            <th>주문자</th>
+                            <td>
+                                <input type="text" class="uid"
+                                       th:placeholder="${user.userName}" readonly>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>휴대폰</th>
+                            <td>
+                                <input type="text" class="hp" th:placeholder="${user.userHp}"
+                                       readonly>
+                            </td>
+                        </tr>
+                        <tr class="use cf">
+                            <th>포인트사용</th>
+                            <td class="use_point cf">
+                                <input type="text" class="point"
+                                       th:placeholder="${user.userTotalPoint}+'p 사용이 가능합니다.'">
+                                <a href="#" class="point_btn">사용하기</a><br>
+                                <div></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>받는분</th>
+                            <td><input type="text" class="recepit" placeholder=""></td>
+                        </tr>
+                        <tr>
+                            <th>연락처</th>
+                            <td><input type="text" class="rec_hp" placeholder="">
+                                <a href="#" class="user_btn">연동하기</a><br>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="delivery_addr">배송주소</th>
+                            <td class="cf">
+                                <input type="text" name="zip" id="zip" class="post_sch" placeholder="우편번호"
+                                       title="우편번호 검색칸" readonly/>
+                                <a href="#" class="btnZip" onclick="postcode()"><img
+                                        th:src="@{/images/user/btn_post_search.gif}" alt="우편번호 검색" class="post_sch_btn"></a>
+                                <input type="text" class="addr1" id="addr1" placeholder="기본주소 검색">
+                                <input type="text" class="addr2" id="addr2" placeholder="상세주소 입력">
+
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>결제방법</th>
+                            <td class="chkboxes">
+                                <input type="radio" name="pay" id="check" value="1"><label for="check"></label>
+                                계좌이체
+                                <input type="radio" name="pay" class="" placeholder="" value="2">신용카드
+                                <input type="radio" name="pay" class="" placeholder="" value="3">체크카드
+                                <input type="radio" name="pay" class="" placeholder="" value="4">휴대폰
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>기타</th>
+                            <td><input type="textarea" placeholder="" class="etc"></td>
+                        </tr>
+                    </table>
+                </div> <!-- .order_info -->
+
+                <div class="order_final cf">
+                    <table class="tb2">
+                        <tr>
+                            <th colspan="2">전체합계</th>
+                        </tr>
+                        <tr>
+                            <td>상품수</td>
+                            <td id="total_count">0개</td>
+                        </tr>
+                        <tr>
+                            <td>상품금액</td>
+                            <td id="total_price">0원</td>
+                        </tr>
+                        <tr>
+                            <td>할인금액</td>
+                            <td id="total_discount">0원</td>
+                        </tr>
+                        <tr>
+                            <td>포인트 사용</td>
+                            <td class="pointUse">0p</td>
+                        </tr>
+                        <tr>
+                            <td>배송비</td>
+                            <td id="total_delivery">0원</td>
+                        </tr>
+                        <tr>
+                            <td>포인트 적립</td>
+                            <td id="total_point">0p</td>
+                        </tr>
+                        <tr>
+                            <td>전체주문금액</td>
+                            <td id="total_orderPrice">0원</td>
+                        </tr>
+                    </table><!-- .tb2 -->
+                    <button class="btn_order"><a href="#">주문하기</a></button>
+
+                    <form id="formData">
+                        <input type="hidden" name="prodNo" value="" id="productNum">
+                        <input type="hidden" name="orderuserUid" th:value="${user.userUid}"
+                               id="uid">
+                        <input type="hidden" name="orderSendName" th:value="${user.userName}"
+                               id="userName">
+                        <input type="hidden" name="orderSendHp" th:value="${user.userHp}"
+                               id="userHp">
+                        <input type="hidden" name="orderReceiveName" value="" id="recepit">
+                        <input type="hidden" name="orderReceiveHp" value="" id="recHp">
+                        <input type="hidden" name="orderAddr" value="" id="recAddr">
+                        <input type="hidden" name="orderPay" value="" id="payment">
+                        <input type="hidden" name="orderMemo" value="" id="orderDesc">
+                        <input type="hidden" name="orderStock" value="" id="totalCount">
+                        <input type="hidden" name="orderPrice" value="" id="totalPrice">
+                        <input type="hidden" name="orderDiscount" value="" id="totalDiscount">
+                        <input type="hidden" name="orderPlusPoint" value="" id="totalPoint">
+                        <input type="hidden" name="orderDeliveryFee" value="" id="totalDelivery">
+                        <input type="hidden" name="orderTotalPrice" value="" id="totalOrderPrice">
+                        <input type="hidden" name="orderUsePoint" value="" id="usePoint">
+                    </form>
+
+
+                </div><!-- .order_final -->
+
+            </div><!-- .articleIn -->
+        </article><!-- .article -->
+    </section>
+</main><!-- #main -->
+<th:block th:include="grid/_footer.html"/>

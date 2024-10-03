@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrator</title>
+    <link rel="stylesheet" th:href="@{/css/style_admin.css}">
+    <script>
+        window.onload = function(){
+            const now = document.querySelector('a#orderlist[href]');
+            if (now) {
+                now.classList.add("now");
+            }
+            document.addEventListener('click', function(e) {
+                const selectall = document.querySelector('.selectall');
+                const checkboxes = document.querySelectorAll('.select');
+
+                // 전체 선택 체크박스 클릭 시
+                if (e.target.classList.contains('selectall')) {
+                    selectAll(e.target);
+                }
+
+                // 개별 체크박스 클릭 시
+                if (e.target.classList.contains('select')) {
+                    updateSelectAllCheckbox();
+                }
+
+
+                // 삭제 버튼 클릭 시
+                if (e.target.classList.contains('del')) {
+                    e.preventDefault();
+
+                    const selectedCheckboxes = document.querySelectorAll('.select:checked');
+                    let selectedIds = [];
+
+                    for (let checkbox of selectedCheckboxes) {
+                        const row = checkbox.closest('tr');
+                        const orderNo = row.querySelector('.no').textContent.trim();
+                        selectedIds.push(orderNo);
+                    }
+
+                    if (selectedIds.length === 0) {
+                        alert('삭제하려는 주문을 선택하세요.');
+                        return;
+                    }
+
+                    if (!confirm('선택한 주문을 정말 삭제하시겠습니까?')) {
+                        return;
+                    }
+
+
+                    fetch('/admin/OrderList/Delete', {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(selectedIds)
+                    })
+                        .then(resp => resp.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert('삭제되었습니다.');
+                                location.reload();
+                            } else {
+                                alert('삭제에 실패했습니다.');
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Error:', err);
+                            alert('삭제 중 오류가 발생했습니다.');
+                        });
+                }// delete END
+
+
+                function selectAll(selectAllCheckbox) {
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = selectAllCheckbox.checked;
+                    });
+                }
+
+                function updateSelectAllCheckbox() {
+                    const allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
+                    selectall.checked = allChecked;
+                }
+
+            }); // EventListener END
+        }//onload END
+        // 모달 상세보기 스크립트
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.detail_btn').forEach(button => {
+                button.addEventListener('click', function(event) {
+                    event.preventDefault(); // 기본 동작 방지
+
+                    // 버튼의 data-order-no 속성에서 주문 번호를 가져옴
+                    const orderNo = this.getAttribute('data-order-no');
+
+                    // AJAX 요청 보내기
+                    fetch(`/admin/OrderList/${orderNo}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('네트워크 오류: ' + response.status);
+                            }
+                            return response.json();
+                        })
+                        .then(orderData => {
+                            // 모달에 데이터를 채우기
+                            document.querySelector('.modal_Addr').textContent = orderData.orderAddr;
+                            document.querySelector('.modal_rhp').textContent = orderData.orderReceiveHp;
+                            document.querySelector('.modal_rname').textContent = orderData.orderReceiveName;
+                            document.querySelector('.modal_shp').textContent = orderData.orderSendHp;
+                            document.querySelector('.modal_sname').textContent = orderData.orderSendName;
+                            document.querySelector('.modal_memo').textContent = orderData.orderMemo;
+                            document.querySelector('.modal').style.display = 'block';
+                        })
+                        .catch(err => {
+                            console.error('Error fetching order details:', err);
+                            alert('주문 정보를 가져오는 데 오류가 발생했습니다.');
+                        });
+                });
+            });
+
+            // 모달 닫기 버튼 처리
+            document.querySelector('.close_btn').addEventListener('click', function() {
+                document.querySelector('.modal').style.display = 'none';
+            });
+        });
+
+    </script>
+</head>
+<body>
+<div id="wrap">
+    <th:block th:include="/admin/Admin_header"/>
+    <link rel="stylesheet" th:href="@{/css/user/findidresult.css}">
+
+    <div class="modal">
+        <section class="modal_popup">
+            <div class="top_txt">
+            </div>
+            <div>
+                <table class="modal_table">
+                    <tr>
+                        <td>주소</td>
+                        <td>
+                            <p><span class="modal_Addr"></span></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>수령자 전화번호</td>
+                        <td>
+                            <p><span class="modal_rhp"></span></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>수령자 성함</td>
+                        <td>
+                            <p><span class="modal_rname"></span></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>주문자 전화번호</td>
+                        <td>
+                            <p><span class="modal_shp"></span></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>주문자 성함</td>
+                        <td>
+                            <p><span class="modal_sname"></span></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>참고사항</td>
+                        <td>
+                            <p><span class="modal_memo"></span></p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <button type="button" class="close_btn">닫기</button>
+        </section><!-- section modal -->
+    </div>
+    <main>
+        <th:block th:include="/admin/Admin_aside"/>
+        <section class="orderlist">
+            <section>
+                <h3>주문목록</h3>
+                <article>
+                    <table>
+                        <thead>
+                        <tr>
+                            <th><input type="checkbox" class="selectall" onclick='selectAll(this)'></th>
+                            <th>주문번호</th>
+                            <th>상품명</th>
+                            <th>판매가격</th>
+                            <th>수량</th>
+                            <th>배송비</th>
+                            <th>합계</th>
+                            <th>주문자</th>
+                            <th>주문일</th>
+                            <th>확인</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:if="${OrderPageResponseDTO == null }">
+                            <td colspan="11" style="width: 100%;">등록된 주문이 없습니다.</td>
+                        </tr>
+                        <tr th:each="order:${OrderPageResponseDTO.dtoList}">
+                            <td><input type="checkbox" class="select" th:value="${order.orderNo}" onclick='checkSelectAll(this)'></td>
+                            <td class="no">[[${order.orderNo}]]</td>
+                            <td>[[${order.prodName}]]</td>
+                            <td class="price">[[${order.orderPrice}]]</td>
+                            <td>[[${order.orderStock}]]</td>
+                            <td class="price">[[${order.orderDeliveryFee}]]</td>
+                            <td class="price">합계</td>
+                            <td>[[${order.orderSendName}]]</td>
+                            <td>[[${order.Date}]]<br>[[${order.timeDate}]]</td>
+                            <td><a href="#" class="detail_btn" th:data-order-no="${order.orderNo}">[상세확인]</a></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </article>
+                <article>
+                    <h3>
+                        <a href="#" class="del">선택삭제</a>
+                    </h3>
+                </article>
+                <article class="paging">
+                    <p>
+                        <a th:href="@{/admin/OrderList(pg=${OrderPageResponseDTO.start - 1})}" th:if="${OrderPageResponseDTO.prev}" class="no current">&#60;</a>
+                        <th:block th:each="num:${#numbers.sequence(OrderPageResponseDTO.start, OrderPageResponseDTO.end)}">
+                            <a th:href="@{/admin/OrderList(pg=${num})}"
+                               th:classappend="${num == OrderPageResponseDTO.pg} ? 'no current bold' : 'no'">[[${num}]]</a>
+                        </th:block>
+                        <a th:href="@{/admin/OrderList(pg=${OrderPageResponseDTO.end + 1})}" th:if="${OrderPageResponseDTO.next}" class="no current">&#62;</a>
+                    </p>
+                </article>
+            </section>
+        </section>
+    </main>
+</div>
+<th:block th:include="/admin/Admin_footer"/>
+</body>
+</html>

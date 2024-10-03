@@ -1,0 +1,190 @@
+<th:block th:include ="/user/User_myinfo_header.html"/>
+<link rel="stylesheet" th:href="@{/css/common_myinfo.css}">
+<title>장바구니</title>
+<link rel="stylesheet" th:href="@{/css/user/myInfoOrder.css}">
+<script>
+        window.onload = function() {
+            const now = document.querySelector('.aside_bg .cate_lnb_real li:nth-child(2) a');
+            if (now) {
+                now.classList.add("now");
+            }
+        };
+        // 모달 상세보기 스크립트
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.detail_btn').forEach(button => {
+                button.addEventListener('click', function(event) {
+                    event.preventDefault(); // 기본 동작 방지
+
+                    // 버튼의 data-order-no 속성에서 주문 번호를 가져옴
+                    const orderNo = this.getAttribute('data-order-no');
+                    console.log(orderNo)
+                    // AJAX 요청 보내기
+                    fetch(`/userInfo/UserMyinfoOrder/${orderNo}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('네트워크 오류: ' + response.status);
+                            }
+                            return response.json();
+                        })
+                        .then(orderData => {
+                            // 모달에 데이터를 채우기
+                            document.querySelector('.modal_Addr').textContent = orderData.orderAddr;
+                            document.querySelector('.modal_rhp').textContent = orderData.orderReceiveHp;
+                            document.querySelector('.modal_rname').textContent = orderData.orderReceiveName;
+                            document.querySelector('.modal_shp').textContent = orderData.orderSendHp;
+                            document.querySelector('.modal_sname').textContent = orderData.orderSendName;
+                            document.querySelector('.modal_memo').textContent = orderData.orderMemo;
+                            document.querySelector('.modal').style.display = 'block';
+                        })
+                        .catch(err => {
+                            console.error('Error fetching order details:', err);
+                            alert('주문 정보를 가져오는 데 오류가 발생했습니다.');
+                        });
+                });
+            });
+
+            // 모달 닫기 버튼 처리
+            document.querySelector('.close_btn').addEventListener('click', function() {
+                document.querySelector('.modal').style.display = 'none';
+            });
+        });
+</script>
+<!-- #main -->
+<link rel="stylesheet" th:href="@{/css/user/findidresult.css}">
+<div class="modal">
+    <section class="modal_popup">
+        <div class="top_txt">
+        </div>
+        <div>
+            <table class="modal_table">
+                <tr>
+                    <td>주소</td>
+                    <td>
+                        <p><span class="modal_Addr"></span></p>
+                    </td>
+                </tr>
+                <tr>
+                    <td>수령자 전화번호</td>
+                    <td>
+                        <p><span class="modal_rhp"></span></p>
+                    </td>
+                </tr>
+                <tr>
+                    <td>수령자 성함</td>
+                    <td>
+                        <p><span class="modal_rname"></span></p>
+                    </td>
+                </tr>
+                <tr>
+                    <td>주문자 전화번호</td>
+                    <td>
+                        <p><span class="modal_shp"></span></p>
+                    </td>
+                </tr>
+                <tr>
+                    <td>주문자 성함</td>
+                    <td>
+                        <p><span class="modal_sname"></span></p>
+                    </td>
+                </tr>
+                <tr>
+                    <td>참고사항</td>
+                    <td>
+                        <p><span class="modal_memo"></span></p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <button type="button" class="close_btn">닫기</button>
+    </section><!-- section modal -->
+</div>
+<main id="main" class="cf">
+    <section class="mainIn cf">
+        <div class="sub_bg">
+            <img th:src="@{/images/myinfo/myinfo_top_tit.png}" alt="MY INFO" class="sub_tit">
+        </div><!-- .sub_bg -->
+        <aside class="aside">
+            <div class="sidebar">
+                <div class="aside_cate">
+                    <img th:src="@{/images/myinfo/myinfo_menu_tit.png}" alt="Buying in the Market 장보기">
+                </div><!-- .aside_cate -->
+                <div class="aside_bg">
+                    <ul class="cate_lnb_real">
+                        <li> <a th:href="@{/userInfo/UserMyinfoCart(userId=${#authentication.principal.user.userUid})}">장바구니</a></li>
+                        <li> <a th:href="@{/userInfo/UserMyinfoOrder(userId=${#authentication.principal.user.userUid})}">주문정보</a></li>
+                        <li> <a th:href="@{/userInfo/UserMyinfo}">정보수정</a></li>
+                    </ul><!-- .cate_lnb -->
+                </div><!-- .aside_bg -->
+            </div><!-- .sidebar -->
+        </aside><!-- .aside -->
+        <article class="article">
+            <div class="articleIn cf">
+                <nav>
+                    <h2><img th:src="@{/images/myinfo/myinfo_nav_tit2.png}" alt="주문내역"></h2>
+                    <p class="location">
+                        <img th:src="@{/images/sub_page_nav_ico.gif}" alt="메뉴">
+                        <span>HOME </span>
+                        <span>나의정보 </span>
+                        <strong>주문내역</strong>
+                    </p><!-- .location -->
+                </nav>
+                <table class="tb1">
+                    <colgroup>
+                        <col style="width: 11%">
+                        <col style="width: 5%">
+                        <col style="width: 10%">
+                        <col style="width: 15%">
+                        <col style="width: 10%">
+                        <col style="width: 10%">
+                        <col style="width: 10%">
+                        <col style="width: 10%">
+                        <col style="width: 10%">
+                    </colgroup>
+                    <tr>
+                        <th>주문번호</th>
+                        <th>이미지</th>
+                        <th>상품명</th>
+                        <th>판매가격</th>
+                        <th>수량</th>
+                        <th>합계</th>
+                        <th>주문자</th>
+                        <th>주문일</th>
+                        <th>확인</th>
+                    </tr>
+                    <tr th:if="${OrderPageResponseDTO == null }">
+                        <td colspan="11" style="width: 100%;">등록된 주문이 없습니다.</td>
+                    </tr>
+                    <tr th:each="order:${OrderPageResponseDTO.dtoList}">
+                        <td class="no">[[${order.orderNo}]]</td>
+                        <td><img th:src="@{'/uploads/'+${order.productDTO.prodImage1}}" alt="제품 이미지 1"></td>
+                        <td>[[${order.prodName}]]</td>
+                        <td class="price">[[${order.productDTO.prodPrice}]]</td>
+                        <td>[[${order.orderStock}]]</td>
+                        <td class="price">[[${order.orderTotalPrice}]]</td>
+                        <td>[[${order.orderSendName}]]</td>
+                        <td>[[${order.Date}]]<br>[[${order.timeDate}]]</td>
+                        <td><a href="#" class="detail_btn" th:data-order-no="${order.orderNo}">[상세확인]</a></td>
+                    </tr>
+                </table><!-- .tb1 -->
+                <div class="pages">
+                    <ul>
+                        <li>
+                            <a th:href="@{/userInfo/UserMyinfoOrder(pg=${OrderPageResponseDTO.start - 1})}" th:if="${OrderPageResponseDTO.prev}" class="no current">이전</a>
+                        </li>
+                        <li>
+                            <th:block th:each="num:${#numbers.sequence(OrderPageResponseDTO.start, OrderPageResponseDTO.end)}">
+                                <a th:href="@{/userInfo/UserMyinfoOrder(pg=${num})}" th:classappend="${num == OrderPageResponseDTO.pg} ? 'no current bold' : 'no'">[[${num}]]</a>
+                            </th:block>
+                        </li>
+                        <li>
+                            <a th:href="@{/userInfo/UserMyinfoOrder(pg=${OrderPageResponseDTO.end + 1})}" th:if="${OrderPageResponseDTO.next}" class="no current">다음</a>
+                        </li>
+                    </ul>
+                </div>
+            </div><!-- .articleIn -->
+        </article><!-- .article -->
+    </section>
+</main><!-- #main -->
+
+<th:block th:include ="/user/User_footer.html"/>
+

@@ -1,0 +1,103 @@
+<th:block th:include="user/User_header.html"/>
+<title>비밀번호 변경</title>
+<script>
+
+    // 유효성 검사에 사용할 정규표현식
+    const rePass = /^(?=.*[a-zA-z])(?=.*[0-9])(?=.*[$`~!@$!%*#^?&\\(\\)\-_=+]).{5,16}$/;
+
+    // 유효성 검사에 사용할 상태변수
+    let isPassOk = false;
+
+    window.onload=function (){
+
+        const registerForm = document.getElementsByTagName('form')[0];
+        const resultPass = document.getElementsByClassName('resultPass')[0];
+        const submit = document.querySelector('.next-button');
+
+        // 2.비밀번호 유효성 검사
+        registerForm.pass2.addEventListener('focusout', function(){
+
+            const pass = registerForm.userPass.value;
+            const pass2 = registerForm.pass2.value;
+
+            if(!pass.match(rePass)){
+                resultPass.innerText = "비밀번호가 유효하지 않습니다.";
+                resultPass.style.color = 'red';
+                return;
+            }
+
+            if(pass == pass2){
+                resultPass.innerText = "비밀번호가 일치합니다.";
+                resultPass.style.color = 'green';
+                isPassOk = true;
+            }else{
+                resultPass.innerText = "비밀번호가 일치하지 않습니다.";
+                resultPass.style.color = 'red';
+
+            }
+        });
+
+        submit.addEventListener('click', function (e) {
+
+            if (!isPassOk) {
+                alert('비밀번호가 유효하지 않습니다. 다시 입력해 주세요.');
+                e.preventDefault(); // 제출 중단
+            }
+        });
+
+    }
+</script>
+<link rel="stylesheet" th:href="@{/css/user/style_passwordchange.css}">
+        <!-- 메인 -->
+         <main>
+            <section>
+                <form th:action="@{/user/UserFindPassResult}" method="post" enctype="multipart/form-data">
+                    <h1>비밀번호 변경</h1>
+                    <table class="passwordchange">
+                        <tbody>
+                            <tr>
+                                <th>
+                                    <label>아이디</label>
+                                </th>
+                                <td>
+                                      <span>[[${uid}]]</span>
+                                      <input type="hidden" th:value="${uid}" name="userUid">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <label>새 비밀번호</label>
+                                </th>
+                                <td>
+                                    <input type="password" name="userPass" placeholder="비밀번호 입력"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <label>새 비밀번호 확인</label>
+                                </th>
+                                <td>
+                                    <input type="password" name="pass2" placeholder="비밀번호 확인 입력"/>
+	                             	<span class="resultPass"></span>
+                                    
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p>
+                        비밀번호를 변경해 주세요.<br>
+                        영문, 숫자, 특수문자를 사용하여 8자 이상 입력해 주세요.
+                    </p>
+                    <div>
+                        <a th:href="@{/user/UserLogin}" class="cancel-button">취소</a>
+                        <button type="submit" class="next-button">
+
+                            <span>변경</span>
+
+                        </button>
+                    </div>
+                </form>
+            </section>
+        </main>
+
+    <th:block th:include = "user/User_footer.html"/>

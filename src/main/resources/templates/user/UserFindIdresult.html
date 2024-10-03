@@ -1,0 +1,74 @@
+<th:block th:include="user/User_header.html"/>
+<title>아이디찾기</title>
+<link rel="stylesheet" th:href="@{/css/user/findidresult.css}">
+<main>
+	<div class="mainIn">
+		<div class="container">
+			<form>
+				<section>
+
+					<div class="top_txt">
+						<span>아이디 찾기 결과</span>
+					</div>
+
+					<!-- 사용자 정보가 있을 때 -->
+					<div th:if="${user != null}">
+						<table>
+							<tr>
+								<td>이름</td>
+								<td>
+									<p><span th:text="${user.name}"></span></p>
+								</td>
+							</tr>
+							<tr>
+								<td>아이디</td>
+								<td>
+									<p><span th:text="${user.uid}"></span></p>
+								</td>
+							</tr>
+							<tr>
+								<td>이메일</td>
+								<td>
+									<p><span th:text="${user.email}"></span></p>
+								</td>
+							</tr>
+							<tr>
+								<td>가입일</td>
+								<td>
+									<p><span th:text="${user.regdate}"></span></p>
+								</td>
+							</tr>
+						</table>
+					</div>
+
+					<!-- 사용자 정보가 없을 때 -->
+					<div th:if="${user == null}">
+						<div class="note" id="note">
+							고객님의 정보와 일치하는 아이디가 없습니다.
+						</div>
+					</div>
+
+				</section>
+
+				<!-- 버튼들 -->
+				<div class="btns">
+					<!-- 사용자 정보가 없을 때 -->
+					<div th:if="${user == null}">
+						<a th:href="@{/user/UserFindId}" class="btn1">아이디찾기</a>
+						<a th:href="@{/user/UserTerms}" class="btn2">회원가입</a>
+					</div>
+
+					<!-- 사용자 정보가 있을 때 -->
+					<div th:if="${user != null}">
+						<a th:href="@{/user/UserLogin}" class="btn3">로그인</a>
+						<a th:href="@{/user/UserFindPass}" class="btn4">비밀번호찾기</a>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+</main>
+
+<th:block th:include="user/User_footer.html"/>
+
+
